@@ -42,7 +42,7 @@ dependencies:
   rotary_scrollbar: ^0.1.0
 ```
 
-Then, import `wrotary_scrollbar` in your Dart code.
+Then, import `rotary_scrollbar` in your Dart code.
 
 ```dart
 // Import the package.
