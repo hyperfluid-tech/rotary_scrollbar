@@ -1,7 +1,9 @@
 # rotary_scrollbar
-Flutter implementation of a rounded scrollbar for wearOS devices with round screens
+Flutter implementation of a native-looking Wear OS circular scrollbar.
 
-Also listens to rotary input and provides haptic feedback.
+It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
+
+And it is able to control the view's `ScrollController` or `PageController` with rotary input, including haptic feedback for each rotary event. 
 
 ![Screenshot_1671591814](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
 
@@ -39,7 +41,7 @@ To use this plugin, add `rotary_scrollbar` as a dependency in your `pubspec.yaml
 
 ```yaml
 dependencies:
-  rotary_scrollbar: ^0.1.0
+  rotary_scrollbar: ^0.1.1
 ```
 
 Then, import `rotary_scrollbar` in your Dart code.
@@ -52,14 +54,14 @@ import 'package:rotary_scrollbar/rotary_scrollbar.dart';
 ### ListView
 ```dart
 
-class WatchScreenList extends StatefulWidget {
-  const WatchScreenList({super.key});
+class WatchScreen extends StatefulWidget {
+  const WatchScreen({super.key});
 
   @override
-  State<WatchScreenList> createState() => _WatchScreenListState();
+  State<WatchScreen> createState() => _WatchScreenState();
 }
 
-class _WatchScreenListState extends State<WatchScreenList> {
+class _WatchScreenState extends State<WatchScreen> {
   final scrollController = ScrollController();
 
   @override
@@ -144,4 +146,4 @@ class _WatchScreenState extends State<WatchScreen> {
 
 ## Supported devices
 
-- Wear OS devices with rotary input (Galaxy Watch 4, Pixel Watch, etc.)
+- Wear OS devices with rotary input and round screens (Galaxy Watch 4, Pixel Watch, etc.)
