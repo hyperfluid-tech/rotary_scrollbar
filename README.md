@@ -73,7 +73,7 @@ class _WatchScreenListState extends State<WatchScreenList> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: RotaryScrollWrapper(
-        rotaryScrollBar: RotaryScrollBar(
+        rotaryScrollbar: RotaryScrollbar(
           controller: scrollController,
         ),
         child: ListView.builder(
@@ -123,7 +123,7 @@ class _WatchScreenState extends State<WatchScreen> {
     return Scaffold(
       backgroundColor: Colors.black,
       body: RotaryScrollWrapper(
-        rotaryScrollBar: RotaryScrollBar(
+        rotaryScrollbar: RotaryScrollbar(
           controller: pageController,
         ),
         child: PageView(
