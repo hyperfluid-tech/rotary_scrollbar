@@ -3,7 +3,7 @@ Flutter implementation of a native-looking Wear OS circular scrollbar.
 
 It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
 
-And it is able to control the `ScrollController` with rotary input and haptic feedback.
+And it is able to control the view's `ScrollController` or `PageController` with rotary input, including haptic feedback for each rotary event. 
 
 ![Screenshot_1671591814](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
 
