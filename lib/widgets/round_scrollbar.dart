@@ -89,21 +89,22 @@ class _RoundScrollbarState extends State<RoundScrollbar> {
   }
 
   void _updateScrollValues() {
-    _fractionOfThumb = 1 /
-        ((widget.controller.position.maxScrollExtent /
-                widget.controller.position.viewportDimension) +
-            1);
+    _fractionOfThumb =
+        1 / ((widget.controller.position.maxScrollExtent / widget.controller.position.viewportDimension) + 1);
 
-    _index = (widget.controller.offset /
-        widget.controller.position.viewportDimension);
+    _index = (widget.controller.offset / widget.controller.position.viewportDimension);
   }
 
   @override
   void initState() {
     widget.controller.addListener(_onScrolled);
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) => _updateScrollValues());
-    WidgetsBinding.instance.addPostFrameCallback((_) => _hideAfterDelay());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      setState(() {
+        _updateScrollValues();
+        _hideAfterDelay();
+      });
+    });
   }
 
   @override
