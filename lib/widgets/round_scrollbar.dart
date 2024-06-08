@@ -71,11 +71,11 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   Color? get _trackColor =>
       widget.trackColor ??
-      Theme.of(context).scrollbarTheme.trackColor?.resolve(<MaterialState>{}) ??
+      Theme.of(context).scrollbarTheme.trackColor?.resolve(<WidgetState>{}) ??
       Theme.of(context).highlightColor;
   Color? get _thumbColor =>
       widget.thumbColor ??
-      Theme.of(context).scrollbarTheme.thumbColor?.resolve(<MaterialState>{}) ??
+      Theme.of(context).scrollbarTheme.thumbColor?.resolve(<WidgetState>{}) ??
       Theme.of(context).highlightColor.withOpacity(1.0);
 
   void _onScrolled() {
