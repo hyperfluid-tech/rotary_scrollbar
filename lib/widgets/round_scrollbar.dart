@@ -78,7 +78,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       Theme.of(context).scrollbarTheme.thumbColor?.resolve(<WidgetState>{}) ??
       Theme.of(context).highlightColor.withOpacity(1.0);
 
-  void _onScrolled() {
+  void _onScroll() {
     final controller = _currentController;
     if (controller == null ||
         !controller.hasClients ||
@@ -100,8 +100,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   }
 
   void _maybeHideAfterDelay() {
-    if (!widget.autoHide) return;
     _fadeOutTimer?.cancel();
+    if (!widget.autoHide) return;
     _fadeOutTimer = Timer(widget.autoHideDuration, () {
       _opacityController.reverse();
       _fadeOutTimer = null;
@@ -112,8 +112,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   void didUpdateWidget(covariant RoundScrollbar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller?.removeListener(_onScrolled);
-      widget.controller?.addListener(_onScrolled);
+      oldWidget.controller?.removeListener(_onScroll);
+      widget.controller?.addListener(_onScroll);
     }
     if (oldWidget.opacityAnimationDuration != widget.opacityAnimationDuration) {
       _opacityController.duration = widget.opacityAnimationDuration;
@@ -129,8 +129,9 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   @override
   void initState() {
     super.initState();
-    _currentController?.addListener(_onScrolled);
+    _currentController?.addListener(_onScroll);
     _opacityController = AnimationController(
+      value: 0,
       vsync: this,
       duration: widget.opacityAnimationDuration,
     );
@@ -163,7 +164,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   @override
   void dispose() {
-    _currentController?.removeListener(_onScrolled);
+    _currentController?.removeListener(_onScroll);
     super.dispose();
   }
 

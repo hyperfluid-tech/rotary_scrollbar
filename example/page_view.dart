@@ -40,10 +40,8 @@ class _WatchScreenState extends State<WatchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: RotaryScrollWrapper(
-        rotaryScrollbar: RotaryScrollbar(
-          controller: pageController,
-        ),
+      body: RotaryScrollbar(
+        controller: pageController,
         child: PageView(
           scrollDirection: Axis.vertical,
           controller: pageController,
