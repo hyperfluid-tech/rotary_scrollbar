@@ -74,7 +74,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       Theme.of(context).scrollbarTheme.trackColor?.resolve(<MaterialState>{}) ??
       Theme.of(context).highlightColor;
   Color? get _thumbColor =>
-      widget.trackColor ??
+      widget.thumbColor ??
       Theme.of(context).scrollbarTheme.thumbColor?.resolve(<MaterialState>{}) ??
       Theme.of(context).highlightColor.withOpacity(1.0);
 
@@ -143,8 +143,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
     _painter = _RoundProgressBarPainter(
       opacityAnimation: _opacityAnimation,
       track: _RoundProgressBarPart(
-        angleLength: _kProgressBarLength,
-        startingAngle: _kProgressBarStartingPoint,
+        length: _kProgressBarLength,
+        startAngle: _kProgressBarStartingPoint,
         color: widget.trackColor,
       ),
       thumbColor: widget.thumbColor,
@@ -178,39 +178,27 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   }
 }
 
-class _RoundProgressBarThumb extends _RoundProgressBarPart {
-  final double trackLength;
-  final double initialAngle;
-
-  _RoundProgressBarThumb({
-    required super.startingAngle,
-    required super.angleLength,
-    required super.color,
-  })  : initialAngle = startingAngle,
-        trackLength = angleLength;
-}
-
 class _RoundProgressBarPart {
-  double startingAngle;
-  double angleLength;
+  double startAngle;
+  double length;
   Color? color;
 
   _RoundProgressBarPart({
-    required this.startingAngle,
-    required this.angleLength,
+    required this.startAngle,
+    required this.length,
     required this.color,
   });
 
   bool shouldRepaint(covariant _RoundProgressBarPart oldProps) {
-    return startingAngle != oldProps.startingAngle ||
-        angleLength != oldProps.angleLength ||
+    return startAngle != oldProps.startAngle ||
+        length != oldProps.length ||
         color != oldProps.color;
   }
 }
 
 class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
   final _RoundProgressBarPart track;
-  late final _RoundProgressBarThumb thumb;
+  late final _RoundProgressBarPart thumb;
   final Animation<double> opacityAnimation;
 
   final double trackWidth;
@@ -223,18 +211,18 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
     required this.trackWidth,
     required this.opacityAnimation,
   }) {
-    thumb = _RoundProgressBarThumb(
+    thumb = _RoundProgressBarPart(
       color: thumbColor,
-      startingAngle: track.startingAngle,
-      angleLength: track.angleLength,
+      startAngle: track.startAngle,
+      length: track.length,
     );
     opacityAnimation.addListener(notifyListeners);
   }
 
   void updateThumb(double index, double fraction) {
     thumb
-      ..angleLength = thumb.trackLength * fraction
-      ..startingAngle = thumb.angleLength * index + thumb.initialAngle;
+      ..length = track.length * fraction
+      ..startAngle = thumb.length * index + track.startAngle;
     notifyListeners();
   }
 
@@ -282,8 +270,8 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
           width: innerWidth,
           height: innerHeight,
         ),
-        part.startingAngle,
-        part.angleLength,
+        part.startAngle,
+        part.length,
         true,
       );
 
@@ -307,5 +295,11 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
   @override
   bool? hitTest(Offset position) {
     return false;
+  }
+
+  @override
+  void dispose() {
+    opacityAnimation.removeListener(notifyListeners);
+    super.dispose();
   }
 }
