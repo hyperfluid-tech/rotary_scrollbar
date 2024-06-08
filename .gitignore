@@ -25,3 +25,6 @@ rotary_scrollbar.iml
 .idea/workspace.xml
 .flutter-plugins-dependencies
 .flutter-plugins
+
+# FVM Version Cache
+.fvm/
