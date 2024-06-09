@@ -80,23 +80,34 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   void _onScroll() {
     final controller = _currentController;
-    if (controller == null ||
-        !controller.hasClients ||
-        !controller.position.hasContentDimensions) return;
+    if (controller == null || !controller.position.hasViewportDimension) return;
     _updateScrollbarPainter(controller);
     _opacityController.forward();
     _maybeHideAfterDelay();
   }
 
+  double? _viewPortDimensions;
+  bool _onScrollMetricsChange(ScrollMetricsNotification notification) {
+    if (!notification.metrics.hasViewportDimension ||
+        !notification.metrics.hasContentDimensions ||
+        _viewPortDimensions == notification.metrics.viewportDimension) {
+      return false;
+    }
+    _onScroll();
+    _viewPortDimensions = notification.metrics.viewportDimension;
+
+    return false;
+  }
+
   void _updateScrollbarPainter(ScrollController controller) {
-    final fractionOfThumb = 1 /
+    final thumbFraction = 1 /
         ((controller.position.maxScrollExtent /
                 controller.position.viewportDimension) +
             1);
 
     final index = (controller.offset / controller.position.viewportDimension);
 
-    _painter.updateThumb(index, fractionOfThumb);
+    _painter.updateThumb(index, thumbFraction);
   }
 
   void _maybeHideAfterDelay() {
@@ -170,10 +181,13 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   @override
   Widget build(BuildContext context) {
-    return CustomPaint(
-      foregroundPainter: _painter,
-      child: RepaintBoundary(
-        child: widget.child,
+    return NotificationListener<ScrollMetricsNotification>(
+      onNotification: _onScrollMetricsChange,
+      child: CustomPaint(
+        foregroundPainter: _painter,
+        child: RepaintBoundary(
+          child: widget.child,
+        ),
       ),
     );
   }
