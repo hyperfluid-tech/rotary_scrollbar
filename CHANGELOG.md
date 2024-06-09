@@ -1,6 +1,6 @@
 ## 1.0.0
 
-- Fixed issue #7 - Scrollbar not showing on new page.
+- Fixed issue [#7](../../issues/7) - Scrollbar not showing on new page.
 - Improved performance of `RoundScrollbar` and `RotaryScrollbar`.
 - Updated documentation and examples.
 - Removed `RotaryScrollWrapper`. This widget is no longer necessary.
