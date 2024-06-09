@@ -48,11 +48,14 @@ class RotaryScrollbar extends StatefulWidget {
   /// Higher value means bigger jumps between rotary scrolls.
   final double scrollMagnitude;
 
+  final Widget child;
+
   /// A scrollbar which curves around circular screens and reacts to Rotary events.
   /// Similar to native wearOS scrollbar in devices with round screens.
   const RotaryScrollbar({
     super.key,
     required this.controller,
+    required this.child,
     this.padding = 8,
     this.width = 8,
     this.autoHide = true,
@@ -85,7 +88,7 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
 
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
 
-  late num _currentPos;
+  num _currentPos = 0;
 
   @override
   void initState() {
@@ -95,8 +98,10 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   }
 
   void _initControllerListeners() {
-    _currentPos = widget.controller.offset;
     widget.controller.addListener(_scrollControllerListener);
+    if (widget.controller.hasClients) {
+      _currentPos = widget.controller.offset;
+    }
   }
 
   void _scrollControllerListener() {
@@ -205,6 +210,7 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
       autoHideDuration: widget.autoHideDuration,
       opacityAnimationCurve: widget.opacityAnimationCurve,
       opacityAnimationDuration: widget.opacityAnimationDuration,
+      child: widget.child,
     );
   }
 }
@@ -214,8 +220,8 @@ class _RotaryScrollbarPageState extends _RotaryScrollbarState {
 
   @override
   void _initControllerListeners() {
-    _currentPos = _pageController.initialPage;
     _pageController.addListener(_pageControllerListener);
+    _currentPos = _pageController.initialPage;
   }
 
   @override

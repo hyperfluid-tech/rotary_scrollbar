@@ -41,7 +41,7 @@ To use this plugin, add `rotary_scrollbar` as a dependency in your `pubspec.yaml
 
 ```yaml
 dependencies:
-  rotary_scrollbar: ^0.1.1
+  rotary_scrollbar: ^1.0.0
 ```
 
 Then, import `rotary_scrollbar` in your Dart code.
@@ -74,10 +74,8 @@ class _WatchScreenState extends State<WatchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: RotaryScrollWrapper(
-        rotaryScrollbar: RotaryScrollbar(
-          controller: scrollController,
-        ),
+      body: RotaryScrollbar(
+        controller: scrollController,
         child: ListView.builder(
           controller: scrollController,
           itemBuilder: (context, index) {
@@ -124,10 +122,8 @@ class _WatchScreenState extends State<WatchScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-      body: RotaryScrollWrapper(
-        rotaryScrollbar: RotaryScrollbar(
-          controller: pageController,
-        ),
+      body: RotaryScrollbar(
+        controller: pageController,
         child: PageView(
           scrollDirection: Axis.vertical,
           controller: pageController,
