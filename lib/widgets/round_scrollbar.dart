@@ -21,7 +21,7 @@ const _kProgressBarLength = math.pi / 3;
 /// See also:
 ///
 ///  * [RotaryScrollbar], a similar scrollbar that also responds to rotary
-///    input events from devices with rotating bezels or crowns.
+/// input events from devices with rotating bezels or crowns.
 class RoundScrollbar extends StatefulWidget {
   /// The [ScrollController] associated with the scrollable widget this
   /// scrollbar is controlling.

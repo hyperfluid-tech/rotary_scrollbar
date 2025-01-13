@@ -7,59 +7,105 @@ import 'package:rotary_scrollbar/widgets/round_scrollbar.dart';
 import 'package:vibration/vibration.dart';
 import 'package:wearable_rotary/wearable_rotary.dart';
 
-/// A scrollbar that curves around circular screens and reacts to Rotary events.
+/// A specialized scrollbar designed for Wear OS devices with rotary input.
 ///
-/// Similar to the native Wear OS scrollbar on devices with round screens.
-/// It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
-/// And it is able to control the view's `ScrollController` or `PageController`
-/// with touch input (scroll gesture) or by rotary input.
-/// Includes haptic feedback for each rotary event.
+/// This widget enhances the [RoundScrollbar] by adding support for rotary
+/// events, enabling users to scroll through content using a rotating bezel or
+/// crown. It also provides haptic feedback for each scroll tick, enhancing the
+/// user experience. It can be used with any scrollable widget like `PageView`,
+/// `ListView`, etc.
 ///
 /// See also:
-/// - [RoundScrollbar], for a similar scrollbar except it doesn't react to rotary input.
+///
+///  * [RoundScrollbar], the base scrollbar widget that this class extends. It
+/// provides the visual representation of the scrollbar but lacks rotary
+/// input handling.
 class RotaryScrollbar extends StatefulWidget {
-  /// Whether the device should vibrate after each page transition.
+  /// Determines whether haptic feedback (vibration) is generated for each
+  /// scroll tick.
+  ///
+  /// Defaults to `true`.
   final bool hasHapticFeedback;
 
-  /// Duration of the animation between page transitions.
+  /// The duration of the animation when transitioning between pages in a
+  /// [PageView].
+  ///
+  /// This [Duration] is used by the internal [PageController] to animate page
+  /// changes triggered by rotary input.
+  ///
+  /// Defaults to 250 milliseconds.
   final Duration pageTransitionDuration;
 
-  /// Animation curve for page transitions.
+  /// The animation curve used for page transitions in a [PageView].
+  ///
+  /// This [Curve] is applied to the page animation controlled by the internal
+  /// [PageController].
+  ///
+  /// Defaults to [Curves.easeInOutCirc].
   final Curve pageTransitionCurve;
 
-  /// Duration of the animation between scrolls.
+  /// The duration of the scroll animation for scrollable widgets other than
+  /// [PageView].
+  ///
+  /// Defaults to 100 milliseconds.
   final Duration scrollAnimationDuration;
 
-  /// Animation curve for scroll animations.
+  /// The animation curve to use for scroll animations triggered by rotary input.
+  ///
+  /// Defaults to [Curves.linear].
   final Curve scrollAnimationCurve;
 
-  /// ScrollController for the scrollbar.
+  /// The [ScrollController] for the scrollable widget that this scrollbar
+  /// controls.
   final ScrollController controller;
 
-  /// Padding between the edges of the screen and scrollbar track.
+  /// The padding around the scrollbar track.
+  ///
+  /// This value defines the space between the scrollbar and the edges of the
+  /// screen.
+  ///
+  /// Defaults to 8 logical pixels.
   final double padding;
 
-  /// Width of the scrollbar track and thumb.
+  /// The width of the scrollbar track and thumb.
+  ///
+  /// Defaults to 8 logical pixels.
   final double width;
 
-  /// Whether the scrollbar should hide automatically if inactive.
+  /// Whether the scrollbar should automatically hide after a period of
+  /// inactivity.
+  ///
+  /// Defaults to `true`.
   final bool autoHide;
 
-  /// Animation curve for the showing/hiding animation.
+  /// The animation curve used to control the showing and hiding animation of
+  /// the scrollbar.
+  ///
+  /// Defaults to [Curves.easeInOut].
   final Curve opacityAnimationCurve;
 
-  /// Animation duration for the showing/hiding animation.
+  /// The duration of the animation for showing and hiding the scrollbar.
+  ///
+  /// Defaults to 250 milliseconds.
   final Duration opacityAnimationDuration;
 
-  /// How long the scrollbar is displayed after a scroll event.
+  /// The amount of time the scrollbar remains visible after a scroll event
+  /// before fading out.
+  ///
+  /// Defaults to 3 seconds.
   final Duration autoHideDuration;
 
-  /// Adjust scroll magnitude.
+  /// Adjusts the scroll magnitude for rotary input.
   ///
-  /// A higher value means bigger jumps between rotary scrolls.
+  /// A higher value results in larger scroll jumps for each rotary tick.
+  ///
+  /// Defaults to 50.
   final double scrollMagnitude;
 
-  /// The widget that will be scrolled.
+  /// The widget that will be wrapped with the scrollbar.
+  ///
+  /// Typically, this is a scrollable widget like `ListView`, `PageView`, or
+  /// `CustomScrollView`.
   final Widget child;
 
   /// Creates a [RotaryScrollbar].
@@ -83,6 +129,7 @@ class RotaryScrollbar extends StatefulWidget {
 
   @override
   State<RotaryScrollbar> createState() {
+    // Determines the appropriate state class based on the type of controller.
     if (controller is PageController) {
       return _RotaryScrollbarPageState();
     }
@@ -93,20 +140,17 @@ class RotaryScrollbar extends StatefulWidget {
 
 class _RotaryScrollbarState extends State<RotaryScrollbar> {
   static const _kVibrationDuration = 25;
+
   static const _kVibrationAmplitude = 64;
 
-  // Prevents onEdgeVibration to be triggered more than once per second
   static const _kOnEdgeVibrationDelay = Duration(seconds: 1);
 
   late final StreamSubscription<RotaryEvent> _rotarySubscription;
 
   num _currentPos = 0;
 
-  @override
-  void initState() {
-    _initRotarySubscription();
-    _initControllerListeners();
-    super.initState();
+  void _initRotarySubscription() {
+    _rotarySubscription = rotaryEvents.listen(_rotaryEventListener);
   }
 
   void _initControllerListeners() {
@@ -119,10 +163,6 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   void _scrollControllerListener() {
     if (_isAnimating) return;
     _currentPos = widget.controller.offset;
-  }
-
-  void _initRotarySubscription() {
-    _rotarySubscription = rotaryEvents.listen(_rotaryEventListener);
   }
 
   void _rotaryEventListener(RotaryEvent event) {
@@ -145,7 +185,10 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
     _currentPos = nextPos;
   }
 
+  /// Tracks the current animation update to prevent overlapping animations.
   int _currentUpdate = 0;
+
+  /// Indicates whether an animation is currently in progress.
   bool _isAnimating = false;
 
   void _updateIsAnimating(int thisUpdate) {
@@ -200,6 +243,13 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   }
 
   @override
+  void initState() {
+    _initRotarySubscription();
+    _initControllerListeners();
+    super.initState();
+  }
+
+  @override
   void dispose() {
     _disposeRotarySubscription();
     _disposeControllerListeners();
@@ -229,7 +279,9 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   }
 }
 
+/// A specialized version of [_RotaryScrollbarState] for use with [PageController].
 class _RotaryScrollbarPageState extends _RotaryScrollbarState {
+  /// The [PageController] associated with the scrollable widget.
   PageController get _pageController => widget.controller as PageController;
 
   @override
