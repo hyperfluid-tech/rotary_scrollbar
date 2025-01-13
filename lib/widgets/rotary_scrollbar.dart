@@ -7,8 +7,18 @@ import 'package:rotary_scrollbar/widgets/round_scrollbar.dart';
 import 'package:vibration/vibration.dart';
 import 'package:wearable_rotary/wearable_rotary.dart';
 
+/// A scrollbar that curves around circular screens and reacts to Rotary events.
+///
+/// Similar to the native Wear OS scrollbar on devices with round screens.
+/// It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
+/// And it is able to control the view's `ScrollController` or `PageController`
+/// with touch input (scroll gesture) or by rotary input.
+/// Includes haptic feedback for each rotary event.
+///
+/// See also:
+/// - [RoundScrollbar], for a similar scrollbar except it doesn't react to rotary input.
 class RotaryScrollbar extends StatefulWidget {
-  /// Whether device should vibrate after each page transition.
+  /// Whether the device should vibrate after each page transition.
   final bool hasHapticFeedback;
 
   /// Duration of the animation between page transitions.
@@ -26,13 +36,13 @@ class RotaryScrollbar extends StatefulWidget {
   /// ScrollController for the scrollbar.
   final ScrollController controller;
 
-  /// Padding between edges of screen and scrollbar track.
+  /// Padding between the edges of the screen and scrollbar track.
   final double padding;
 
-  /// Width of scrollbar track and thumb.
+  /// Width of the scrollbar track and thumb.
   final double width;
 
-  /// Whether scrollbar should hide automatically if inactive.
+  /// Whether the scrollbar should hide automatically if inactive.
   final bool autoHide;
 
   /// Animation curve for the showing/hiding animation.
@@ -41,17 +51,18 @@ class RotaryScrollbar extends StatefulWidget {
   /// Animation duration for the showing/hiding animation.
   final Duration opacityAnimationDuration;
 
-  /// How long scrollbar is displayed after a scroll event.
+  /// How long the scrollbar is displayed after a scroll event.
   final Duration autoHideDuration;
 
   /// Adjust scroll magnitude.
-  /// Higher value means bigger jumps between rotary scrolls.
+  ///
+  /// A higher value means bigger jumps between rotary scrolls.
   final double scrollMagnitude;
 
+  /// The widget that will be scrolled.
   final Widget child;
 
-  /// A scrollbar which curves around circular screens and reacts to Rotary events.
-  /// Similar to native wearOS scrollbar in devices with round screens.
+  /// Creates a [RotaryScrollbar].
   const RotaryScrollbar({
     super.key,
     required this.controller,
@@ -83,6 +94,7 @@ class RotaryScrollbar extends StatefulWidget {
 class _RotaryScrollbarState extends State<RotaryScrollbar> {
   static const _kVibrationDuration = 25;
   static const _kVibrationAmplitude = 64;
+
   // Prevents onEdgeVibration to be triggered more than once per second
   static const _kOnEdgeVibrationDelay = Duration(seconds: 1);
 
@@ -135,6 +147,7 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
 
   int _currentUpdate = 0;
   bool _isAnimating = false;
+
   void _updateIsAnimating(int thisUpdate) {
     if (thisUpdate != _currentUpdate) return;
     _isAnimating = false;
@@ -165,6 +178,7 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   }
 
   bool _isVibratingOnEdge = false;
+
   void _scrollOnEdge(RotaryEvent event) {
     if (_isVibratingOnEdge) return;
 

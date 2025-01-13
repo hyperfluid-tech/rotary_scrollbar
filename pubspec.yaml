@@ -1,6 +1,6 @@
 name: rotary_scrollbar
 description: circular scrollbar for Wear OS devices. It can be controlled with rotary input and it includes haptic feedback.
-version: 1.0.0
+version: 1.0.1
 homepage: https://github.com/hyperfluid-tech/rotary_scrollbar
 
 environment:
@@ -16,6 +16,7 @@ dependencies:
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^4.0.0
+  flutter_lints: ^5.0.0
+  lints: ^5.1.1
 
 flutter:

@@ -3,22 +3,34 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'dart:math' as math;
 
-// starts at the 2pm marker on an analog watch
+// Starts at the 2 o'clock marker on an analog clock.
 const _kProgressBarStartingPoint = math.pi * (-1 / 2 + 1 / 3);
-// finishes at the 4pm marker on an analog watch
+
+// Finishes at the 4 o'clock marker on an analog clock.
 const _kProgressBarLength = math.pi / 3;
 
+/// A scrollbar that curves around circular screens and reacts to Rotary events.
+///
+/// Similar to the native Wear OS scrollbar on devices with round screens.
+/// It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
+/// And it is able to control the view's `ScrollController` or `PageController`
+/// with touch input (scroll gesture).
+///
+/// See also:
+/// - [RotaryScrollbar], for a similar scrollbar that reacts to rotary input.
 class RoundScrollbar extends StatefulWidget {
   /// ScrollController for the scrollbar.
+  ///
+  /// If null, it will use the [PrimaryScrollController] from the context.
   final ScrollController? controller;
 
-  /// Padding between edges of screen and scrollbar track.
+  /// Padding between the edges of the screen and scrollbar track.
   final double padding;
 
-  /// Width of scrollbar track and thumb.
+  /// Width of the scrollbar track and thumb.
   final double width;
 
-  /// Whether scrollbar should hide automatically if inactive.
+  /// Whether the scrollbar should hide automatically if inactive.
   final bool autoHide;
 
   /// Animation curve for the showing/hiding animation.
@@ -27,19 +39,23 @@ class RoundScrollbar extends StatefulWidget {
   /// Animation duration for the showing/hiding animation.
   final Duration opacityAnimationDuration;
 
-  /// How long scrollbar is displayed after a scroll event.
+  /// How long the scrollbar is displayed after a scroll event.
   final Duration autoHideDuration;
 
-  /// Overrides color of the scrollbar track.
+  /// Overrides the color of the scrollbar track.
+  ///
+  /// If null, it will use the `scrollbarTheme.trackColor` from the context.
   final Color? trackColor;
 
-  /// Overrides color of the scrollbar thumb.
+  /// Overrides the color of the scrollbar thumb.
+  ///
+  /// If null, it will use the `scrollbarTheme.thumbColor` from the context.
   final Color? thumbColor;
 
+  /// The widget that will be scrolled.
   final Widget child;
 
-  /// A scrollbar which curves around circular screens.
-  /// Similar to native wearOS scrollbar in devices with round screens.
+  /// Creates a [RoundScrollbar].
   const RoundScrollbar({
     required this.child,
     this.controller,
@@ -73,10 +89,11 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       widget.trackColor ??
       Theme.of(context).scrollbarTheme.trackColor?.resolve(<WidgetState>{}) ??
       Theme.of(context).highlightColor;
+
   Color? get _thumbColor =>
       widget.thumbColor ??
       Theme.of(context).scrollbarTheme.thumbColor?.resolve(<WidgetState>{}) ??
-      Theme.of(context).highlightColor.withOpacity(1.0);
+      Theme.of(context).highlightColor.withAlpha(255);
 
   void _onScroll() {
     final controller = _currentController;
@@ -87,6 +104,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   }
 
   double? _viewPortDimensions;
+
   bool _onScrollMetricsChange(ScrollMetricsNotification notification) {
     if (!notification.metrics.hasViewportDimension ||
         !notification.metrics.hasContentDimensions ||
@@ -104,7 +122,6 @@ class _RoundScrollbarState extends State<RoundScrollbar>
         ((controller.position.maxScrollExtent /
                 controller.position.viewportDimension) +
             1);
-
     final index = (controller.offset / controller.position.viewportDimension);
 
     _painter.updateThumb(index, thumbFraction);
@@ -215,7 +232,6 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
   final _RoundProgressBarPart track;
   late final _RoundProgressBarPart thumb;
   final Animation<double> opacityAnimation;
-
   final double trackWidth;
   final double trackPadding;
 
@@ -264,7 +280,7 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
     required double opacity,
   }) {
     final paint = Paint()
-      ..color = part.color?.withOpacity(part.color!.opacity * opacity) ??
+      ..color = part.color?.withValues(alpha: part.color!.a * opacity) ??
           const Color(0x00000000)
       ..strokeWidth = trackWidth.toDouble()
       ..style = PaintingStyle.stroke
