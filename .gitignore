@@ -28,3 +28,6 @@ rotary_scrollbar.iml
 
 # FVM Version Cache
 .fvm/
+.fvmrc
+
+.idea/
