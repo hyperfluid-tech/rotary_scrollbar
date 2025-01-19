@@ -120,27 +120,13 @@ class RoundScrollbar extends StatefulWidget {
 
 class _RoundScrollbarState extends State<RoundScrollbar>
     with SingleTickerProviderStateMixin {
-  ScrollController? get _currentController =>
-      widget.controller ?? PrimaryScrollController.of(context);
+  ScrollController? _currentController;
 
   late final _RoundProgressBarPainter _painter;
 
   late final AnimationController _opacityController;
   late final Animation<double> _opacityAnimation;
   Timer? _fadeOutTimer;
-
-  /// Resolves the track color, prioritizing the widget's [trackColor], then
-  /// the theme's `scrollbarTheme.trackColor`, and finally falling back to the
-  /// theme's `highlightColor`.
-  Color? get _trackColor =>
-      widget.trackColor ??
-      Theme.of(context).scrollbarTheme.trackColor?.resolve(<WidgetState>{}) ??
-      Theme.of(context).highlightColor;
-
-  Color? get _thumbColor =>
-      widget.thumbColor ??
-      Theme.of(context).scrollbarTheme.thumbColor?.resolve(<WidgetState>{}) ??
-      Theme.of(context).highlightColor.withAlpha(255);
 
   void _onScroll() {
     final controller = _currentController;
@@ -187,17 +173,14 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   void didUpdateWidget(covariant RoundScrollbar oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.controller != widget.controller) {
-      oldWidget.controller?.removeListener(_onScroll);
-      widget.controller?.addListener(_onScroll);
+      _updateController();
     }
     if (oldWidget.opacityAnimationDuration != widget.opacityAnimationDuration) {
       _opacityController.duration = widget.opacityAnimationDuration;
     }
-    if (oldWidget.thumbColor != widget.thumbColor) {
-      _painter.thumb.color = _thumbColor;
-    }
-    if (oldWidget.trackColor != widget.trackColor) {
-      _painter.track.color = _trackColor;
+    if (oldWidget.thumbColor != widget.thumbColor ||
+        oldWidget.trackColor != widget.trackColor) {
+      _updatePainter();
     }
   }
 
@@ -232,9 +215,25 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
+    _updatePainter();
+    _updateController();
+  }
+
+  void _updatePainter() {
     _painter
-      ..track.color = _trackColor
-      ..thumb.color = _thumbColor;
+      ..track.color = widget.trackColor ??
+          ScrollbarTheme.of(context).trackColor?.resolve(<WidgetState>{}) ??
+          Theme.of(context).highlightColor
+      ..thumb.color = widget.thumbColor ??
+          ScrollbarTheme.of(context).thumbColor?.resolve(<WidgetState>{}) ??
+          Theme.of(context).highlightColor.withAlpha(255);
+  }
+
+  void _updateController() {
+    _currentController?.removeListener(_onScroll);
+    _currentController =
+        widget.controller ?? PrimaryScrollController.of(context);
+    _currentController?.addListener(_onScroll);
   }
 
   @override
