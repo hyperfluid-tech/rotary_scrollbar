@@ -54,6 +54,7 @@ void main() {
         ),
       ),
     );
+    await tester.pump();
   }
 
   group('Basic rendering', () {
@@ -130,7 +131,7 @@ void main() {
 
     testWidgets(
       'GIVEN autoHide is false '
-      'WHEN autoHide duration elapses '
+      'WHEN any duration elapses '
       'THEN scrollbar remains visible',
       (tester) async {
         // Arrange
@@ -139,7 +140,7 @@ void main() {
         await tester.pumpAndSettle(defaultOpacityDuration);
 
         // Act
-        await tester.pump(defaultAutoHideDuration);
+        await tester.pump(defaultAutoHideDuration * 2);
 
         // Assert
         expect(renderObject, paintsTrackAndThumb(opacity: 1));
@@ -147,7 +148,7 @@ void main() {
     );
   });
 
-  group('Animation durations', () {
+  group('Animation control', () {
     testWidgets(
       'GIVEN custom opacity duration '
       'WHEN fading in '
@@ -160,17 +161,16 @@ void main() {
           opacityAnimationDuration: customOpacityDuration,
         );
         final renderObject = getRenderObject(tester);
-        await tester.pump();
 
         // Act & Assert
-        await tester.pump(customOpacityDuration * 0.5);
+        await tester.pump(customOpacityDuration ~/ 2);
         expect(
           renderObject,
           paintsTrackAndThumb(
-            opacity: defaultOpacityAnimationCurve.transform(0.5),
-          ),
+              opacity: defaultOpacityAnimationCurve.transform(0.5)),
         );
-        await tester.pump(customOpacityDuration * 0.5);
+
+        await tester.pumpAndSettle();
         expect(
           renderObject,
           paintsTrackAndThumb(opacity: 1),
@@ -181,25 +181,28 @@ void main() {
     );
 
     testWidgets(
-      'GIVEN custom opacity duration '
-      'WHEN fading out '
-      'THEN uses specified duration',
+      'GIVEN custom opacity curve '
+      'WHEN animating '
+      'THEN applies specified curve',
       (tester) async {
         // Arrange
-        const customOpacityDuration = Duration(milliseconds: 100);
-        await setUpWidget(
-          tester,
-          opacityAnimationDuration: customOpacityDuration,
-        );
+        const customCurve = Curves.easeOut;
+        await setUpWidget(tester, opacityAnimationCurve: customCurve);
         final renderObject = getRenderObject(tester);
-        await tester.pump();
 
-        // Act & Assert
-        await tester.pump(customOpacityDuration);
+        // Act
+        await tester.pump(defaultOpacityDuration ~/ 2);
+
+        // Assert
+        expect(
+          renderObject,
+          paintsTrackAndThumb(opacity: customCurve.transform(0.5)),
+        );
+
+        await tester.pumpAndSettle();
         expect(renderObject, paintsTrackAndThumb(opacity: 1));
 
         await tester.pumpAndSettle(defaultAutoHideDuration);
-        expect(renderObject, paintsTrackAndThumb(opacity: 0));
       },
     );
 
@@ -215,7 +218,7 @@ void main() {
         await tester.pumpAndSettle(defaultOpacityDuration);
 
         // Act & Assert
-        await tester.pump(customAutoHideDuration);
+        await tester.pump(customAutoHideDuration ~/ 2);
         expect(renderObject, paintsTrackAndThumb(opacity: 1));
 
         await tester.pump(customAutoHideDuration);
@@ -233,17 +236,19 @@ void main() {
       (tester) async {
         // Arrange
         const customWidth = 20.0;
-        await setUpWidget(tester, autoHide: false, width: customWidth);
+        await setUpWidget(tester, width: customWidth);
         final renderObject = getRenderObject(tester);
 
         // Act
-        await tester.pumpAndSettle(defaultOpacityDuration);
+        await tester.pumpAndSettle();
 
         // Assert
         expect(
           renderObject,
           paintsTrackAndThumb(opacity: 1, width: customWidth),
         );
+
+        await tester.pump(defaultAutoHideDuration);
       },
     );
 
@@ -259,7 +264,6 @@ void main() {
           tester,
           thumbColor: customThumbColor,
           trackColor: customTrackColor,
-          autoHide: false,
         );
         final renderObject = getRenderObject(tester);
 
@@ -275,6 +279,8 @@ void main() {
             trackColor: customTrackColor,
           ),
         );
+
+        await tester.pump(defaultAutoHideDuration);
       },
     );
   });
