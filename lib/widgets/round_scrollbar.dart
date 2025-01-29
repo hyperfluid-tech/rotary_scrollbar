@@ -125,6 +125,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   late final _RoundProgressBarPainter _painter;
 
   late final AnimationController _opacityController;
+
   late final Animation<double> _opacityAnimation;
   Timer? _fadeOutTimer;
 
@@ -132,7 +133,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
     final controller = _currentController;
     if (controller == null || !controller.position.hasViewportDimension) return;
     _updateScrollbarPainter(controller);
-    _opacityController.forward();
+    if (!_opacityController.isAnimating) _opacityController.forward();
     _maybeHideAfterDelay();
   }
 
@@ -239,6 +240,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   @override
   void dispose() {
     _currentController?.removeListener(_onScroll);
+    _opacityController.dispose();
     super.dispose();
   }
 
