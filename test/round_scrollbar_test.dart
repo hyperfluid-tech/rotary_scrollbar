@@ -228,6 +228,108 @@ void main() {
     );
   });
 
+  group('Fade-out animation', () {
+    testWidgets(
+      'GIVEN visible scrollbar '
+      'WHEN autoHide duration elapses '
+      'THEN fades out with default curve and duration',
+      (tester) async {
+        // Arrange
+        await setUpWidget(tester);
+        final renderObject = getRenderObject(tester);
+        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+        // Act
+        await tester.pump(defaultAutoHideDuration);
+        await tester.pump(defaultOpacityDuration ~/ 2);
+
+        // Assert intermediate state
+        expect(
+          renderObject,
+          paintsTrackAndThumb(
+            opacity: defaultOpacityAnimationCurve.transform(0.5),
+          ),
+        );
+
+        // Act - complete animation
+        await tester.pumpAndSettle();
+
+        // Assert final state
+        expect(renderObject, paintsTrackAndThumb(opacity: 0));
+      },
+    );
+
+    testWidgets(
+      'GIVEN fading out '
+      'WHEN user scrolls '
+      'THEN initiates new fade-in animation',
+      (tester) async {
+        // Arrange
+        await setUpWidget(tester);
+        final renderObject = getRenderObject(tester);
+        await tester.pumpAndSettle(defaultAutoHideDuration);
+        await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
+
+        // Initial scroll to show scrollbar
+        await tester.scrollUntilVisible(find.byKey(ValueKey(1)), 50);
+        await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
+
+        // Assert
+        expect(renderObject, paintsTrackAndThumb(opacity: 1));
+
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
+
+    testWidgets(
+      'GIVEN custom fade-out duration '
+      'WHEN autoHide triggers '
+      'THEN uses specified duration',
+      (tester) async {
+        // Arrange
+        const customDuration = Duration(milliseconds: 500);
+        await setUpWidget(tester, opacityAnimationDuration: customDuration);
+        final renderObject = getRenderObject(tester);
+        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+        // Act
+        await tester.pump(defaultAutoHideDuration);
+        await tester.pump(customDuration ~/ 2);
+
+        // Assert
+        expect(
+          renderObject,
+          paintsTrackAndThumb(
+            opacity: defaultOpacityAnimationCurve.transform(0.5),
+          ),
+        );
+      },
+    );
+
+    testWidgets(
+      'GIVEN custom fade-out curve '
+      'WHEN autoHide triggers '
+      'THEN applies specified curve',
+      (tester) async {
+        // Arrange
+        const customCurve = Curves.easeInCirc;
+        await setUpWidget(tester, opacityAnimationCurve: customCurve);
+        final renderObject = getRenderObject(tester);
+        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+        // Act
+        await tester.pump(defaultAutoHideDuration);
+        await tester.pump(defaultOpacityDuration ~/ 2);
+
+        // Assert
+        expect(
+          renderObject,
+          paintsTrackAndThumb(opacity: customCurve.transform(0.5)),
+        );
+      },
+    );
+  });
+
   group('Visual appearance', () {
     testWidgets(
       'GIVEN a custom width '
