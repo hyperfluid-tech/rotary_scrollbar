@@ -20,6 +20,7 @@ void main() {
     Color? trackColor = defaultTrackColor,
     double width = defaultWidth,
     Curve opacityAnimationCurve = defaultOpacityAnimationCurve,
+    int itemCount = 5,
   }) async {
     tester.view.physicalSize = const Size(500, 500);
     await tester.pumpWidget(
@@ -43,10 +44,10 @@ void main() {
             child: ListView(
               controller: controller,
               children: List.generate(
-                5,
+                itemCount,
                 (i) => SizedBox.square(
                   key: ValueKey(i),
-                  dimension: 500,
+                  dimension: 150,
                 ),
               ),
             ),
@@ -59,21 +60,38 @@ void main() {
 
   group('Basic rendering', () {
     testWidgets(
-      'GIVEN a RoundScrollbar '
+      'GIVEN no scroll interaction '
       'WHEN first built '
-      'THEN renders two CustomPaint elements',
+      'THEN renders scrollbar with initial hidden state',
       (tester) async {
         // Arrange & Act
         await setUpWidget(tester);
+        final renderObject = getRenderObject(tester);
 
         // Assert
-        expect(find.byType(CustomPaint), findsNWidgets(2));
+        expect(getCustomPaintFinder(), findsWidgets);
+        expect(renderObject, paintsTrackAndThumb(opacity: 0));
 
-        await tester.pumpAndSettle(defaultAutoHideDuration);
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
+
+    testWidgets(
+      'GIVEN minimal scrollable content '
+      'WHEN built '
+      'THEN hides scrollbar (no scroll needed)',
+      (tester) async {
+        // Arrange & Act
+        await setUpWidget(tester,
+            itemCount: 1); // Implement `itemCount` in `setUpWidget`
+        final renderObject = getRenderObject(tester);
+
+        // Assert
+        expect(renderObject, paintsNothing);
+        await tester.pump(defaultAutoHideDuration);
       },
     );
   });
-
   group('Auto-hide functionality', () {
     testWidgets(
       'GIVEN autoHide is true '
@@ -389,10 +407,12 @@ void main() {
 }
 
 RenderObject getRenderObject(WidgetTester tester) => tester.renderObject(
-      find.descendant(
-        of: find.byType(RoundScrollbar),
-        matching: find.byType(CustomPaint),
-      ),
+      getCustomPaintFinder(),
+    );
+
+Finder getCustomPaintFinder() => find.descendant(
+      of: find.byType(RoundScrollbar),
+      matching: find.byType(CustomPaint),
     );
 
 PaintPattern paintsTrackAndThumb({

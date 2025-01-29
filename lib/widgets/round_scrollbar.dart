@@ -331,6 +331,9 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
+    if (track.length == thumb.length) {
+      return;
+    }
     _paintPart(
       part: track,
       canvas: canvas,
