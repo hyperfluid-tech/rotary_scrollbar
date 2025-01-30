@@ -1,7 +1,6 @@
 name: 'CI'
 on:
   pull_request:
-  push:
 permissions:
   contents: read
   actions: read
@@ -22,6 +21,6 @@ jobs:
         uses: dorny/test-reporter@v1.9.1
         if: success() || failure()     
         with:
-          name: Flutter Tests          
+          name: Test Report         
           path: 'reports/*.json'                 
           reporter: flutter-json 
