@@ -347,6 +347,30 @@ void main() {
         );
       },
     );
+
+    testWidgets(
+      'GIVEN theme override '
+      'WHEN no local color specified '
+      'THEN uses theme colors',
+      (tester) async {
+        await setUpWidget(tester, thumbColor: null, trackColor: null);
+        await tester.pump(defaultOpacityDuration);
+
+        expect(
+          getRenderObject(tester),
+          paintsTrackAndThumb(
+            opacity: 1,
+            thumbColor: Theme.of(tester.element(find.byType(ListView)))
+                .highlightColor
+                .withValues(alpha: 1),
+            trackColor:
+                Theme.of(tester.element(find.byType(ListView))).highlightColor,
+          ),
+        );
+
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
   });
 
   group('Visual appearance', () {
@@ -405,6 +429,67 @@ void main() {
       },
     );
   });
+
+  group('Configuration changes', () {
+    testWidgets(
+      'GIVEN active scrollbar '
+      'WHEN changing color properties '
+      'THEN updates visual appearance',
+      (tester) async {
+        //Arrange
+        await setUpWidget(
+          tester,
+          thumbColor: Colors.blue,
+          trackColor: Colors.green,
+        );
+
+        // Act
+        await setUpWidget(
+          tester,
+          thumbColor: Colors.red,
+          trackColor: Colors.yellow,
+        );
+
+        // Assert
+        expect(
+          getRenderObject(tester),
+          paintsTrackAndThumb(
+            opacity: 0,
+            thumbColor: Colors.red,
+            trackColor: Colors.yellow,
+          ),
+        );
+
+        await tester.pump(defaultOpacityDuration);
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
+
+    testWidgets(
+      'GIVEN active controller '
+      'WHEN swapping controllers '
+      'THEN updates scroll tracking',
+      (tester) async {
+        // Arrange
+        final controller1 = ScrollController();
+        final controller2 = ScrollController();
+        await setUpWidget(tester, controller: controller1);
+        final renderObject = getRenderObject(tester);
+
+        //Act
+        await setUpWidget(tester, controller: controller2);
+        await simulateScroll(tester);
+
+        //Assert
+        expect(renderObject, paintsTrackAndThumb(opacity: 0));
+        expect(controller1.hasClients, isFalse);
+        expect(controller2.hasClients, isTrue);
+        expect(controller2.position.extentBefore, greaterThan(0));
+
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
+  });
 }
 
 RenderObject getRenderObject(WidgetTester tester) => tester.renderObject(
@@ -428,10 +513,10 @@ PaintPattern paintsTrackAndThumb({
 }) =>
     paints
       ..path(
-        color: trackColor?.withValues(alpha: opacity),
+        color: trackColor?.withValues(alpha: trackColor.a * opacity),
         strokeWidth: width,
       )
       ..path(
-        color: thumbColor?.withValues(alpha: opacity),
+        color: thumbColor?.withValues(alpha: thumbColor.a * opacity),
         strokeWidth: width,
       );
