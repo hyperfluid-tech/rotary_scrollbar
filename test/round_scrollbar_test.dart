@@ -42,7 +42,6 @@ void main() {
             opacityAnimationCurve: opacityAnimationCurve,
             width: width,
             child: ListView(
-              controller: controller,
               children: List.generate(
                 itemCount,
                 (i) => SizedBox.square(
@@ -186,62 +185,166 @@ void main() {
   });
 
   group('Animation control', () {
-    testWidgets(
-      'GIVEN custom opacity duration '
-      'WHEN fading in '
-      'THEN uses specified duration',
-      (tester) async {
-        // Arrange
-        const customOpacityDuration = Duration(milliseconds: 900);
-        await setUpWidget(
-          tester,
-          opacityAnimationDuration: customOpacityDuration,
-        );
-        final renderObject = getRenderObject(tester);
+    group('Fade in animation', () {
+      testWidgets(
+        'GIVEN custom opacity duration '
+        'WHEN fading in '
+        'THEN uses specified duration',
+        (tester) async {
+          // Arrange
+          const customOpacityDuration = Duration(milliseconds: 900);
+          await setUpWidget(
+            tester,
+            opacityAnimationDuration: customOpacityDuration,
+          );
+          final renderObject = getRenderObject(tester);
 
-        // Act & Assert
-        await tester.pump(customOpacityDuration ~/ 2);
-        expect(
-          renderObject,
-          paintsTrackAndThumb(
-              opacity: defaultOpacityAnimationCurve.transform(0.5)),
-        );
+          // Act & Assert
+          await tester.pump(customOpacityDuration ~/ 2);
+          expect(
+            renderObject,
+            paintsTrackAndThumb(
+                opacity: defaultOpacityAnimationCurve.transform(0.5)),
+          );
 
-        await tester.pumpAndSettle();
-        expect(
-          renderObject,
-          paintsTrackAndThumb(opacity: 1),
-        );
+          await tester.pumpAndSettle();
+          expect(
+            renderObject,
+            paintsTrackAndThumb(opacity: 1),
+          );
 
-        await tester.pumpAndSettle(defaultAutoHideDuration);
-      },
-    );
+          await tester.pumpAndSettle(defaultAutoHideDuration);
+        },
+      );
 
-    testWidgets(
-      'GIVEN custom opacity curve '
-      'WHEN animating '
-      'THEN applies specified curve',
-      (tester) async {
-        // Arrange
-        const customCurve = Curves.easeOut;
-        await setUpWidget(tester, opacityAnimationCurve: customCurve);
-        final renderObject = getRenderObject(tester);
+      testWidgets(
+        'GIVEN custom opacity curve '
+        'WHEN animating fade in '
+        'THEN applies specified curve',
+        (tester) async {
+          // Arrange
+          const customCurve = Curves.easeOut;
+          await setUpWidget(tester, opacityAnimationCurve: customCurve);
+          final renderObject = getRenderObject(tester);
 
-        // Act
-        await tester.pump(defaultOpacityDuration ~/ 2);
+          // Act
+          await tester.pump(defaultOpacityDuration ~/ 2);
 
-        // Assert
-        expect(
-          renderObject,
-          paintsTrackAndThumb(opacity: customCurve.transform(0.5)),
-        );
+          // Assert
+          expect(
+            renderObject,
+            paintsTrackAndThumb(opacity: customCurve.transform(0.5)),
+          );
 
-        await tester.pumpAndSettle();
-        expect(renderObject, paintsTrackAndThumb(opacity: 1));
+          await tester.pumpAndSettle();
+          expect(renderObject, paintsTrackAndThumb(opacity: 1));
 
-        await tester.pumpAndSettle(defaultAutoHideDuration);
-      },
-    );
+          await tester.pumpAndSettle(defaultAutoHideDuration);
+        },
+      );
+    });
+
+    group('Fade-out animation', () {
+      testWidgets(
+        'GIVEN visible scrollbar '
+        'WHEN autoHide duration elapses '
+        'THEN fades out with default curve and duration',
+        (tester) async {
+          // Arrange
+          await setUpWidget(tester);
+          final renderObject = getRenderObject(tester);
+          await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+          // Act
+          await tester.pump(defaultAutoHideDuration);
+          await tester.pump(defaultOpacityDuration ~/ 2);
+
+          // Assert intermediate state
+          expect(
+            renderObject,
+            paintsTrackAndThumb(
+              opacity: defaultOpacityAnimationCurve.transform(0.5),
+            ),
+          );
+
+          // Act - complete animation
+          await tester.pumpAndSettle();
+
+          // Assert final state
+          expect(renderObject, paintsTrackAndThumb(opacity: 0));
+        },
+      );
+
+      testWidgets(
+        'GIVEN fading out '
+        'WHEN user scrolls '
+        'THEN initiates new fade-in animation',
+        (tester) async {
+          // Arrange
+          await setUpWidget(tester);
+          final renderObject = getRenderObject(tester);
+          await tester.pumpAndSettle(defaultAutoHideDuration);
+          await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
+
+          // Initial scroll to show scrollbar
+          await simulateScroll(tester);
+          await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
+
+          // Assert
+          expect(renderObject, paintsTrackAndThumb(opacity: 1));
+
+          await tester.pump(defaultAutoHideDuration);
+        },
+      );
+
+      testWidgets(
+        'GIVEN custom fade-out duration '
+        'WHEN autoHide triggers '
+        'THEN uses specified duration',
+        (tester) async {
+          // Arrange
+          const customDuration = Duration(milliseconds: 500);
+          await setUpWidget(tester, opacityAnimationDuration: customDuration);
+          final renderObject = getRenderObject(tester);
+          await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+          // Act
+          await tester.pump(defaultAutoHideDuration);
+          await tester.pump(customDuration ~/ 2);
+
+          // Assert
+          expect(
+            renderObject,
+            paintsTrackAndThumb(
+              opacity: defaultOpacityAnimationCurve.transform(0.5),
+            ),
+          );
+        },
+      );
+
+      testWidgets(
+        'GIVEN custom fade-out curve '
+        'WHEN autoHide triggers '
+        'THEN applies specified curve',
+        (tester) async {
+          // Arrange
+          const customCurve = Curves.easeInCirc;
+          await setUpWidget(tester, opacityAnimationCurve: customCurve);
+          final renderObject = getRenderObject(tester);
+          await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+          // Act
+          await tester.pump(defaultAutoHideDuration);
+          await tester.pump(defaultOpacityDuration ~/ 2);
+
+          // Assert
+          expect(
+            renderObject,
+            paintsTrackAndThumb(opacity: customCurve.transform(0.5)),
+          );
+        },
+      );
+    });
 
     testWidgets(
       'GIVEN custom autoHide duration '
@@ -261,132 +364,6 @@ void main() {
         await tester.pump(customAutoHideDuration);
         await tester.pump(defaultOpacityDuration);
         expect(renderObject, paintsTrackAndThumb(opacity: 0));
-      },
-    );
-  });
-
-  group('Fade-out animation', () {
-    testWidgets(
-      'GIVEN visible scrollbar '
-      'WHEN autoHide duration elapses '
-      'THEN fades out with default curve and duration',
-      (tester) async {
-        // Arrange
-        await setUpWidget(tester);
-        final renderObject = getRenderObject(tester);
-        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
-
-        // Act
-        await tester.pump(defaultAutoHideDuration);
-        await tester.pump(defaultOpacityDuration ~/ 2);
-
-        // Assert intermediate state
-        expect(
-          renderObject,
-          paintsTrackAndThumb(
-            opacity: defaultOpacityAnimationCurve.transform(0.5),
-          ),
-        );
-
-        // Act - complete animation
-        await tester.pumpAndSettle();
-
-        // Assert final state
-        expect(renderObject, paintsTrackAndThumb(opacity: 0));
-      },
-    );
-
-    testWidgets(
-      'GIVEN fading out '
-      'WHEN user scrolls '
-      'THEN initiates new fade-in animation',
-      (tester) async {
-        // Arrange
-        await setUpWidget(tester);
-        final renderObject = getRenderObject(tester);
-        await tester.pumpAndSettle(defaultAutoHideDuration);
-        await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
-
-        // Initial scroll to show scrollbar
-        await simulateScroll(tester);
-        await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
-
-        // Assert
-        expect(renderObject, paintsTrackAndThumb(opacity: 1));
-
-        await tester.pump(defaultAutoHideDuration);
-      },
-    );
-
-    testWidgets(
-      'GIVEN custom fade-out duration '
-      'WHEN autoHide triggers '
-      'THEN uses specified duration',
-      (tester) async {
-        // Arrange
-        const customDuration = Duration(milliseconds: 500);
-        await setUpWidget(tester, opacityAnimationDuration: customDuration);
-        final renderObject = getRenderObject(tester);
-        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
-
-        // Act
-        await tester.pump(defaultAutoHideDuration);
-        await tester.pump(customDuration ~/ 2);
-
-        // Assert
-        expect(
-          renderObject,
-          paintsTrackAndThumb(
-            opacity: defaultOpacityAnimationCurve.transform(0.5),
-          ),
-        );
-      },
-    );
-
-    testWidgets(
-      'GIVEN custom fade-out curve '
-      'WHEN autoHide triggers '
-      'THEN applies specified curve',
-      (tester) async {
-        // Arrange
-        const customCurve = Curves.easeInCirc;
-        await setUpWidget(tester, opacityAnimationCurve: customCurve);
-        final renderObject = getRenderObject(tester);
-        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
-
-        // Act
-        await tester.pump(defaultAutoHideDuration);
-        await tester.pump(defaultOpacityDuration ~/ 2);
-
-        // Assert
-        expect(
-          renderObject,
-          paintsTrackAndThumb(opacity: customCurve.transform(0.5)),
-        );
-      },
-    );
-
-    testWidgets(
-      'GIVEN theme override '
-      'WHEN no local color specified '
-      'THEN uses theme colors',
-      (tester) async {
-        await setUpWidget(tester, thumbColor: null, trackColor: null);
-        await tester.pump(defaultOpacityDuration);
-
-        expect(
-          getRenderObject(tester),
-          paintsTrackAndThumb(
-            opacity: 1,
-            thumbColor: Theme.of(tester.element(find.byType(ListView)))
-                .highlightColor
-                .withValues(alpha: 1),
-            trackColor:
-                Theme.of(tester.element(find.byType(ListView))).highlightColor,
-          ),
-        );
-
-        await tester.pump(defaultAutoHideDuration);
       },
     );
   });
@@ -440,6 +417,30 @@ void main() {
             opacity: 1,
             thumbColor: customThumbColor,
             trackColor: customTrackColor,
+          ),
+        );
+
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
+
+    testWidgets(
+      'GIVEN theme override '
+      'WHEN no local color specified '
+      'THEN uses theme colors',
+      (tester) async {
+        await setUpWidget(tester, thumbColor: null, trackColor: null);
+        await tester.pump(defaultOpacityDuration);
+
+        expect(
+          getRenderObject(tester),
+          paintsTrackAndThumb(
+            opacity: 1,
+            thumbColor: Theme.of(tester.element(find.byType(ListView)))
+                .highlightColor
+                .withValues(alpha: 1),
+            trackColor:
+                Theme.of(tester.element(find.byType(ListView))).highlightColor,
           ),
         );
 

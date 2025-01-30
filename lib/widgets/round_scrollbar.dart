@@ -255,7 +255,10 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       child: CustomPaint(
         foregroundPainter: _painter,
         child: RepaintBoundary(
-          child: widget.child,
+          child: PrimaryScrollController(
+            controller: _currentController!,
+            child: widget.child,
+          ),
         ),
       ),
     );
