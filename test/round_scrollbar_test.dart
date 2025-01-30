@@ -287,7 +287,30 @@ void main() {
           await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
 
           // Initial scroll to show scrollbar
-          await simulateScroll(tester);
+          await simulateScrollGesture(tester);
+          await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
+
+          // Assert
+          expect(renderObject, paintsTrackAndThumb(opacity: 1));
+
+          await tester.pump(defaultAutoHideDuration);
+        },
+      );
+
+      testWidgets(
+        'GIVEN fading out '
+        'WHEN scroll controller value changes '
+        'THEN initiates new fade-in animation',
+        (tester) async {
+          // Arrange
+          final controller = ScrollController();
+          await setUpWidget(tester, controller: controller);
+          final renderObject = getRenderObject(tester);
+          await tester.pumpAndSettle(defaultAutoHideDuration);
+          await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
+
+          // Initial scroll to show scrollbar
+          animateScrollController(controller, Duration(milliseconds: 200));
           await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
 
           // Assert
@@ -497,7 +520,7 @@ void main() {
 
         //Act
         await setUpWidget(tester, controller: controller2);
-        await simulateScroll(tester);
+        await simulateScrollGesture(tester);
 
         //Assert
         expect(renderObject, paintsTrackAndThumb(opacity: 0));
@@ -520,9 +543,18 @@ Finder getCustomPaintFinder() => find.descendant(
       matching: find.byType(CustomPaint),
     );
 
-Future<void> simulateScroll(WidgetTester tester, {double offset = 500}) async {
-  await tester.scrollUntilVisible(find.byKey(ValueKey(1)), 50);
-}
+Future<void> simulateScrollGesture(WidgetTester tester) =>
+    tester.scrollUntilVisible(find.byKey(ValueKey(1)), 50);
+
+void animateScrollController(
+  ScrollController controller,
+  Duration scrollDuration,
+) =>
+    controller.animateTo(
+      controller.offset + 10,
+      duration: scrollDuration,
+      curve: Curves.linear,
+    );
 
 PaintPattern paintsTrackAndThumb({
   required double opacity,
