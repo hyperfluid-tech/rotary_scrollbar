@@ -2,8 +2,12 @@ name: 'CI'
 on:
   pull_request:
   push:
+permissions:
+  contents: read
+  actions: read
+  checks: write
 jobs:
-  build-test:
+  test:
     runs-on: ubuntu-latest
     steps:
       - name: Clone repository
@@ -12,10 +16,12 @@ jobs:
         uses: subosito/flutter-action@v2
         with:
           channel: stable  
-      - run: flutter pub get              # install packages
-      - run: flutter test                 # run tests (configured to use flutter-json reporter)
-      - uses: actions/upload-artifact@v4  # upload test results
-        if: success() || failure()        # run this step even if previous step failed
+      - run: flutter pub get             
+      - run: flutter test               
+      - name: Publish report
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()     
         with:
-          name: test-results
-          path: reports/test-results.json
+          name: Flutter Tests          
+          path: 'reports/*.json'                 
+          reporter: flutter-json 
