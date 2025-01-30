@@ -1,0 +1,21 @@
+name: 'CI'
+on:
+  pull_request:
+  push:
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable  
+      - run: flutter pub get              # install packages
+      - run: flutter test                 # run tests (configured to use flutter-json reporter)
+      - uses: actions/upload-artifact@v4  # upload test results
+        if: success() || failure()        # run this step even if previous step failed
+        with:
+          name: test-results
+          path: report/test-results.json
