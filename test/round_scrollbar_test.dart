@@ -75,6 +75,24 @@ void main() {
         await tester.pump(defaultAutoHideDuration);
       },
     );
+
+    testWidgets(
+      'GIVEN controller is provided '
+      'WHEN first built '
+      'THEN attaches to controller',
+      (tester) async {
+        // Arrange
+        final controller = ScrollController();
+
+        // Act
+        await setUpWidget(tester, controller: controller);
+
+        // Assert
+        expect(controller.hasClients, isTrue);
+
+        await tester.pump(defaultAutoHideDuration);
+      },
+    );
   });
   group('Auto-hide functionality', () {
     testWidgets(
@@ -515,8 +533,10 @@ PaintPattern paintsTrackAndThumb({
       ..path(
         color: trackColor?.withValues(alpha: trackColor.a * opacity),
         strokeWidth: width,
+        style: PaintingStyle.stroke,
       )
       ..path(
         color: thumbColor?.withValues(alpha: thumbColor.a * opacity),
         strokeWidth: width,
+        style: PaintingStyle.stroke,
       );
