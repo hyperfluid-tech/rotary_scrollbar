@@ -75,22 +75,6 @@ void main() {
         await tester.pump(defaultAutoHideDuration);
       },
     );
-
-    testWidgets(
-      'GIVEN minimal scrollable content '
-      'WHEN built '
-      'THEN hides scrollbar (no scroll needed)',
-      (tester) async {
-        // Arrange & Act
-        await setUpWidget(tester,
-            itemCount: 1); // Implement `itemCount` in `setUpWidget`
-        final renderObject = getRenderObject(tester);
-
-        // Assert
-        expect(renderObject, paintsNothing);
-        await tester.pump(defaultAutoHideDuration);
-      },
-    );
   });
   group('Auto-hide functionality', () {
     testWidgets(
@@ -144,6 +128,23 @@ void main() {
 
         // Assert
         expect(renderObject, paintsTrackAndThumb(opacity: 0));
+      },
+    );
+
+    testWidgets(
+      'GIVEN autoHide is true '
+      'BUT no content is not scrollable '
+      'WHEN built '
+      'THEN keeps scrollbar hidden (no scroll needed)',
+      (tester) async {
+        // Arrange & Act
+        await setUpWidget(tester, itemCount: 1);
+        final renderObject = getRenderObject(tester);
+        await tester.pump(defaultOpacityDuration);
+
+        // Assert
+        expect(renderObject, paintsTrackAndThumb(opacity: 0));
+        await tester.pump(defaultAutoHideDuration);
       },
     );
 
@@ -289,7 +290,7 @@ void main() {
         await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
 
         // Initial scroll to show scrollbar
-        await tester.scrollUntilVisible(find.byKey(ValueKey(1)), 50);
+        await simulateScroll(tester);
         await tester.pumpAndSettle(defaultOpacityDuration ~/ 2);
 
         // Assert
@@ -414,6 +415,10 @@ Finder getCustomPaintFinder() => find.descendant(
       of: find.byType(RoundScrollbar),
       matching: find.byType(CustomPaint),
     );
+
+Future<void> simulateScroll(WidgetTester tester, {double offset = 500}) async {
+  await tester.scrollUntilVisible(find.byKey(ValueKey(1)), 50);
+}
 
 PaintPattern paintsTrackAndThumb({
   required double opacity,

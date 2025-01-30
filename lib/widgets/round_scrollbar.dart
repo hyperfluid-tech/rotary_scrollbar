@@ -131,7 +131,11 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   void _onScroll() {
     final controller = _currentController;
-    if (controller == null || !controller.position.hasViewportDimension) return;
+    if (controller == null ||
+        !controller.position.hasViewportDimension ||
+        controller.position.extentInside == controller.position.extentTotal) {
+      return;
+    }
     _updateScrollbarPainter(controller);
     if (!_opacityController.isAnimating) _opacityController.forward();
     _maybeHideAfterDelay();
@@ -331,9 +335,6 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
 
   @override
   void paint(Canvas canvas, Size size) {
-    if (track.length == thumb.length) {
-      return;
-    }
     _paintPart(
       part: track,
       canvas: canvas,
