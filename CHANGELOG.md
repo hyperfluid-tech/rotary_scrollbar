@@ -1,3 +1,13 @@
+## 1.1.0
+
+- **Bug Fixes**:
+  - Made scrollbar not visible when content isn't scrollable.
+  - Improved dependency handling and controller lifecycle management.
+
+- **Other changes**:
+  - Added detailed API docs for `RoundScrollbar` and `RotaryScrollbar`.
+  - Added comprehensive widget tests for scrollbar behavior, animations, and edge cases.
+
 ## 1.0.0
 
 - Fixed issue [#7](../../issues/7) - Scrollbar not showing on new page.

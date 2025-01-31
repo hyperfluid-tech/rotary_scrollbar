@@ -1,0 +1,26 @@
+name: 'tests'
+on:
+  pull_request:
+permissions:
+  contents: read
+  actions: read
+  checks: write
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Clone repository
+        uses: actions/checkout@v4
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable  
+      - run: flutter pub get             
+      - run: flutter test               
+      - name: Publish report
+        uses: dorny/test-reporter@v1.9.1
+        if: success() || failure()     
+        with:
+          name: Test Report         
+          path: 'reports/*.json'                 
+          reporter: flutter-json 

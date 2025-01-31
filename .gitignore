@@ -28,3 +28,7 @@ rotary_scrollbar.iml
 
 # FVM Version Cache
 .fvm/
+.fvmrc
+
+.idea/
+reports/test-results.json

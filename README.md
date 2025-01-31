@@ -1,19 +1,68 @@
+[![pub package](https://img.shields.io/pub/v/rotary_scrollbar.svg)](https://pub.dev/packages/rotary_scrollbar)
+[![tests](https://github.com/hyperfluid-tech/rotary_scrollbar/actions/workflows/tests.yml/badge.svg)](https://github.com/hyperfluid-tech/rotary_scrollbar/actions/workflows/tests.yml)
+[![license](https://img.shields.io/github/license/hyperfluid-tech/rotary_scrollbar)](https://github.com/hyperfluid-tech/rotary_scrollbar/blob/main/LICENSE)
+[![code style: flutter_lints](https://img.shields.io/badge/style-%2F%2F%20flutter_lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
+
 # rotary_scrollbar
-Flutter implementation of a native-looking Wear OS circular scrollbar.
-
-It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
-
-And it is able to control the view's `ScrollController` or `PageController` with rotary input, including haptic feedback for each rotary event. 
-
-![Screenshot_1671591814](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
 
 
+A Flutter package for **Wear OS** that provides a circular scrollbar optimized for rotary input and round screens.  
+Enhance scrollable widgets like `ListView`, `PageView`, and `CustomScrollView` with native-feeling interactions. 
+
+![Demo](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
+
+---
+
+## Features
+
+- 🎯 **Native Experience**: Curved scrollbar designed for circular Wear OS displays.  
+- 🔄 **Rotary Input**: Full support for rotating bezels/crowns with haptic feedback (via `RotaryScrollbar`).  
+- ⚡ **Auto-Hide**: Scrollbar fades after inactivity (configurable duration and animations).  
+- 🎨 **Customizable**: Adjust colors, padding, width, and animation curves.  
+- 📜 **Scrollable-Ready**: Works with any `ScrollController` or `PageController`.  
+- 📱 **Device Support**: Galaxy Watch 4/5, Pixel Watch, and Wear OS 3+ devices.  
+
+---
+
+## RoundScrollbar vs RotaryScrollbar
+
+| Feature                | `RoundScrollbar`          | `RotaryScrollbar`               |  
+|------------------------|---------------------------|----------------------------------|  
+| **Visual Scrollbar**   | ✅ Curved track/thumb     | ✅ Inherits from `RoundScrollbar`|  
+| **Rotary Input**       | ❌                        | ✅ With haptic feedback          |  
+| **Page Transitions**   | ❌                        | ✅ Smooth page animations        |  
+| **Auto-Hide**          | ✅                        | ✅                                |  
+
+### When to Use  
+- **`RotaryScrollbar`**: Default choice for Wear OS apps using rotary input.  
+- **`RoundScrollbar`**: For touch-only interactions or custom scroll logic.  
+
+## Quick Start
+
+### Minimal Example
+```dart
+RotaryScrollbar(
+  controller: ScrollController(),
+  child: ListView.builder(
+    itemBuilder: (_, index) => ListTile(title: Text('Item $index')),
+  ),
+)
+```
+
+---
 
 ## Setup
 
-### Wear OS (Android)
+### 1. Add Dependency  
+```yaml
+dependencies:
+  rotary_scrollbar: ^1.1.0
+```
 
-This package depends on [wearable_rotary](https://pub.dev/packages/wearable_rotary), which requires adding the following to `MainActivity.kt`:
+### 2. Configuration for Wear OS (Android)
+
+#### Rotary Input ([wearable_rotary](https://pub.dev/packages/wearable_rotary))
+Add to `MainActivity.kt`:
 
 ```kotlin
 import android.view.MotionEvent
@@ -29,117 +78,64 @@ class MainActivity : FlutterActivity() {
 }
 ```
 
-This package depends on [vibration](https://pub.dev/packages/vibration), which needs access to the `VIBRATE` permission, so make sure the following is added to `AndroidManifest.xml`
+#### Vibration Permission
 
+Add to `AndroidManifest.xml`:
 ```xml
 <uses-permission android:name="android.permission.VIBRATE"/>
 ```
 
+---
+
 ## Usage
 
-To use this plugin, add `rotary_scrollbar` as a dependency in your `pubspec.yaml` file.
-
-```yaml
-dependencies:
-  rotary_scrollbar: ^1.0.0
-```
-
-Then, import `rotary_scrollbar` in your Dart code.
-
+### With `RoundScrollbar` (Basic)
 ```dart
-// Import the package.
-import 'package:rotary_scrollbar/rotary_scrollbar.dart';
+RoundScrollbar(
+  controller: ScrollController(),
+  child: ListView.builder(
+    itemBuilder: (_, index) => ListTile(title: Text("Item $index")),
+  ),
+)
 ```
 
-### ListView
+### With RotaryScrollbar (Full Features)
 ```dart
-
-class WatchScreen extends StatefulWidget {
-  const WatchScreen({super.key});
-
-  @override
-  State<WatchScreen> createState() => _WatchScreenState();
-}
-
-class _WatchScreenState extends State<WatchScreen> {
-  final scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: RotaryScrollbar(
-        controller: scrollController,
-        child: ListView.builder(
-          controller: scrollController,
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(
-                bottom: 10,
-              ),
-              child: Container(
-                color: Colors.blue.withRed(((255 / 29) * index).toInt()),
-                width: 50,
-                height: 50,
-                child: Center(child: Text('box $index')),
-              ),
-            );
-          },
-          itemCount: 30,
-        ),
-      ),
-    );
-  }
-}
+RotaryScrollbar(
+  controller: PageController(),
+  child: PageView(
+    children: [Page1(), Page2(), Page3()],
+  ),
+)
 ```
+---
 
-### PageView
+## Advanced Configuration
+
+### Customize appearance
 ```dart
-
-class WatchScreen extends StatefulWidget {
-  const WatchScreen({super.key});
-
-  @override
-  State<WatchScreen> createState() => _WatchScreenState();
-}
-
-class _WatchScreenState extends State<WatchScreen> {
-  final pageController = PageController();
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: RotaryScrollbar(
-        controller: pageController,
-        child: PageView(
-          scrollDirection: Axis.vertical,
-          controller: pageController,
-          children: const [
-            Page1(),
-            Page2(),
-            Page3(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+RotaryScrollbar(
+  width: 12,                  // Thickness
+  padding: 16,                // Distance from screen edge
+  trackColor: Colors.grey,    // Scrollbar track
+  thumbColor: Colors.blue,    // Scrollbar thumb
+  autoHideDuration: Duration(seconds: 5),
+  // ...other params
+)
 ```
 
-## Supported devices
+### Disable Haptics
+```dart
+RotaryScrollbar(
+  hasHapticFeedback: false,   // Turn off vibrations
+  // ...
+)
+```
+---
 
-- Wear OS devices with rotary input and round screens (Galaxy Watch 4, Pixel Watch, etc.)
+## Supported Devices
+  - Samsung Galaxy Watch 4/5/6
+
+  - Google Pixel Watch
+
+  - Other Wear OS 3+ devices with rotary input.
