@@ -1,7 +1,7 @@
-[![pub package](https://img.shields.io/pub/v/proper_filesize.svg)](https://pub.dev/packages/rotary_scrollbar)
-[tests](https://github.com/hyperfluid-tech/rotary_scrollbar/actions/workflows/tests.yml/badge.svg)
-[![license](https://img.shields.io/github/license/gilnobrega/proper_filesize)](https://github.com/gilnobrega/proper_filesize/blob/main/LICENSE)
-[![code style: lints](https://img.shields.io/badge/style-%2F%2F%20lints-40c4ff.svg)](https://pub.dev/packages/lints)
+[![pub package](https://img.shields.io/pub/v/rotary_scrollbar.svg)](https://pub.dev/packages/rotary_scrollbar)
+[![tests](https://github.com/hyperfluid-tech/rotary_scrollbar/actions/workflows/tests.yml/badge.svg)](https://github.com/hyperfluid-tech/rotary_scrollbar/actions/workflows/tests.yml)
+[![license](https://img.shields.io/github/license/gilnobrega/rotary_scrollbar)](https://github.com/gilnobrega/rotary_scrollbar/blob/main/LICENSE)
+[![code style: flutter_lints](https://img.shields.io/badge/style-%2F%2F%20flutter_lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
 Flutter implementation of a native-looking Wear OS circular scrollbar.
 
