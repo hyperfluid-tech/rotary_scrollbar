@@ -56,7 +56,7 @@ RotaryScrollbar(
 ### 1. Add Dependency  
 ```yaml
 dependencies:
-  rotary_scrollbar: ^1.0.0
+  rotary_scrollbar: ^1.1.0
 ```
 
 ### 2. Configuration for Wear OS (Android)
