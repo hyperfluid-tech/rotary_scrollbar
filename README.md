@@ -79,7 +79,6 @@ class _WatchScreenState extends State<WatchScreen> {
       body: RotaryScrollbar(
         controller: scrollController,
         child: ListView.builder(
-          controller: scrollController,
           itemBuilder: (context, index) {
             return Padding(
               padding: const EdgeInsets.only(
@@ -128,7 +127,6 @@ class _WatchScreenState extends State<WatchScreen> {
         controller: pageController,
         child: PageView(
           scrollDirection: Axis.vertical,
-          controller: pageController,
           children: const [
             Page1(),
             Page2(),
