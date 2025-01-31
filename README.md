@@ -1,4 +1,8 @@
-# rotary_scrollbar
+[![pub package](https://img.shields.io/pub/v/proper_filesize.svg)](https://pub.dev/packages/rotary_scrollbar)
+[tests](https://github.com/hyperfluid-tech/rotary_scrollbar/actions/workflows/tests.yml/badge.svg)
+[![license](https://img.shields.io/github/license/gilnobrega/proper_filesize)](https://github.com/gilnobrega/proper_filesize/blob/main/LICENSE)
+[![code style: lints](https://img.shields.io/badge/style-%2F%2F%20lints-40c4ff.svg)](https://pub.dev/packages/lints)
+
 Flutter implementation of a native-looking Wear OS circular scrollbar.
 
 It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
@@ -6,8 +10,6 @@ It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
 And it is able to control the view's `ScrollController` or `PageController` with rotary input, including haptic feedback for each rotary event. 
 
 ![Screenshot_1671591814](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
-
-
 
 ## Setup
 
