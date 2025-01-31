@@ -3,13 +3,33 @@
 [![license](https://img.shields.io/github/license/gilnobrega/rotary_scrollbar)](https://github.com/gilnobrega/rotary_scrollbar/blob/main/LICENSE)
 [![code style: flutter_lints](https://img.shields.io/badge/style-%2F%2F%20flutter_lints-40c4ff.svg)](https://pub.dev/packages/flutter_lints)
 
-Flutter implementation of a native-looking Wear OS circular scrollbar.
+# rotary_scrollbar
 
-It can be wrapped around a `PageView`, `ListView` or any other scrollable view.
+A circular scrollbar for Wear OS Flutter apps, optimized for rotary input and round screens.  
+Enhance scrollable views like `ListView` and `PageView` with intuitive scrolling via rotating bezels/crowns.
 
-And it is able to control the view's `ScrollController` or `PageController` with rotary input, including haptic feedback for each rotary event. 
+![Demo](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
 
-![Screenshot_1671591814](https://user-images.githubusercontent.com/82336674/208810952-cbd4c983-f48f-4aa6-8f4d-66fe669aeb55.png)
+## Features
+
+- 🎯 **Native Wear OS Experience**: Curved scrollbar that matches circular displays.
+- 🔄 **Rotary Input Support**: Smooth scrolling control with haptic feedback for rotary devices.
+- ⚡ **Automatic Behavior**: Auto-hides after inactivity with customizable fade animations.
+- 🎨 **Customizable**: Adjust colors, padding, width, and animation curves.
+- 📜 **Scrollable Widget Ready**: Works with `ListView`, `PageView`, `CustomScrollView`, and any `ScrollController`/`PageController`.
+- 📱 **Device Compatibility**: Galaxy Watch 4/5, Pixel Watch, and other Wear OS 3+ devices.
+
+## Quick Start
+
+### Minimal Example
+```dart
+RotaryScrollbar(
+  controller: ScrollController(),
+  child: ListView.builder(
+    itemBuilder: (_, index) => ListTile(title: Text('Item $index')),
+  ),
+)
+```
 
 ## Setup
 
@@ -53,93 +73,18 @@ Then, import `rotary_scrollbar` in your Dart code.
 import 'package:rotary_scrollbar/rotary_scrollbar.dart';
 ```
 
-### ListView
+### With ListView
 ```dart
-
-class WatchScreen extends StatefulWidget {
-  const WatchScreen({super.key});
-
-  @override
-  State<WatchScreen> createState() => _WatchScreenState();
-}
-
-class _WatchScreenState extends State<WatchScreen> {
-  final scrollController = ScrollController();
-
-  @override
-  void dispose() {
-    scrollController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: RotaryScrollbar(
-        controller: scrollController,
-        child: ListView.builder(
-          itemBuilder: (context, index) {
-            return Padding(
-              padding: const EdgeInsets.only(
-                bottom: 10,
-              ),
-              child: Container(
-                color: Colors.blue.withRed(((255 / 29) * index).toInt()),
-                width: 50,
-                height: 50,
-                child: Center(child: Text('box $index')),
-              ),
-            );
-          },
-          itemCount: 30,
-        ),
-      ),
-    );
-  }
-}
+RotaryScrollbar(
+  controller: ScrollController(),
+  child: ListView.builder(itemBuilder: ...),
+)
 ```
 
-### PageView
+### With PageView
 ```dart
-
-class WatchScreen extends StatefulWidget {
-  const WatchScreen({super.key});
-
-  @override
-  State<WatchScreen> createState() => _WatchScreenState();
-}
-
-class _WatchScreenState extends State<WatchScreen> {
-  final pageController = PageController();
-
-  @override
-  void dispose() {
-    pageController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.black,
-      body: RotaryScrollbar(
-        controller: pageController,
-        child: PageView(
-          scrollDirection: Axis.vertical,
-          children: const [
-            Page1(),
-            Page2(),
-            Page3(),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
+RotaryScrollbar(
+  controller: PageController(),
+  child: PageView(children: [Page1(), Page2()]),
+)
 ```
-
-## Supported devices
-
-- Wear OS devices with rotary input and round screens (Galaxy Watch 4, Pixel Watch, etc.)
