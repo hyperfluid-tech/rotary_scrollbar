@@ -120,8 +120,6 @@ class RoundScrollbar extends StatefulWidget {
 
 class _RoundScrollbarState extends State<RoundScrollbar>
     with SingleTickerProviderStateMixin {
-  ScrollController? _currentController;
-
   late final _RoundProgressBarPainter _painter;
 
   late final AnimationController _opacityController;
@@ -129,16 +127,16 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   late final Animation<double> _opacityAnimation;
   Timer? _fadeOutTimer;
 
-  void _onScroll() {
-    final controller = _currentController;
-    if (controller == null ||
-        !controller.position.hasViewportDimension ||
-        controller.position.extentInside == controller.position.extentTotal) {
-      return;
+  bool _onScroll(ScrollNotification notification) {
+    if (!notification.metrics.hasViewportDimension ||
+        notification.metrics.extentInside == notification.metrics.extentTotal) {
+      return false;
     }
-    _updateScrollbarPainter(controller);
+    _updateScrollbarPainter(notification);
     if (!_opacityController.isAnimating) _opacityController.forward();
     _maybeHideAfterDelay();
+
+    return false;
   }
 
   double? _viewPortDimensions;
@@ -149,18 +147,18 @@ class _RoundScrollbarState extends State<RoundScrollbar>
         _viewPortDimensions == notification.metrics.viewportDimension) {
       return false;
     }
-    _onScroll();
     _viewPortDimensions = notification.metrics.viewportDimension;
 
     return false;
   }
 
-  void _updateScrollbarPainter(ScrollController controller) {
+  void _updateScrollbarPainter(ScrollNotification notification) {
     final thumbFraction = 1 /
-        ((controller.position.maxScrollExtent /
-                controller.position.viewportDimension) +
+        ((notification.metrics.maxScrollExtent /
+                notification.metrics.viewportDimension) +
             1);
-    final index = (controller.offset / controller.position.viewportDimension);
+    final index =
+        (notification.metrics.pixels / notification.metrics.viewportDimension);
 
     _painter.updateThumb(index, thumbFraction);
   }
@@ -177,9 +175,6 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   @override
   void didUpdateWidget(covariant RoundScrollbar oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.controller != widget.controller) {
-      _updateController();
-    }
     if (oldWidget.opacityAnimationDuration != widget.opacityAnimationDuration) {
       _opacityController.duration = widget.opacityAnimationDuration;
     }
@@ -192,7 +187,6 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   @override
   void initState() {
     super.initState();
-    _currentController?.addListener(_onScroll);
     _opacityController = AnimationController(
       value: 0,
       vsync: this,
@@ -221,7 +215,6 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   void didChangeDependencies() {
     super.didChangeDependencies();
     _updatePainter();
-    _updateController();
   }
 
   void _updatePainter() {
@@ -234,30 +227,25 @@ class _RoundScrollbarState extends State<RoundScrollbar>
           Theme.of(context).highlightColor.withAlpha(255);
   }
 
-  void _updateController() {
-    _currentController?.removeListener(_onScroll);
-    _currentController =
-        widget.controller ?? PrimaryScrollController.of(context);
-    _currentController?.addListener(_onScroll);
-  }
-
   @override
   void dispose() {
-    _currentController?.removeListener(_onScroll);
     _opacityController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<ScrollMetricsNotification>(
-      onNotification: _onScrollMetricsChange,
-      child: CustomPaint(
-        foregroundPainter: _painter,
-        child: RepaintBoundary(
-          child: PrimaryScrollController(
-            controller: _currentController!,
-            child: widget.child,
+    return PrimaryScrollController(
+      controller: widget.controller ?? PrimaryScrollController.of(context),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScroll,
+        child: NotificationListener<ScrollMetricsNotification>(
+          onNotification: _onScrollMetricsChange,
+          child: CustomPaint(
+            foregroundPainter: _painter,
+            child: RepaintBoundary(
+              child: widget.child,
+            ),
           ),
         ),
       ),
