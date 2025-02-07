@@ -237,15 +237,13 @@ class _RotaryScrollbarState<T extends ScrollController>
     );
   }
 
-  bool _isVibratingOnEdge = false;
-
+  Timer? _vibratingOnEdgeTimer;
   void _scrollOnEdge(RotaryEvent event) {
-    if (_isVibratingOnEdge) return;
+    if (_vibratingOnEdgeTimer?.isActive ?? false) return;
 
-    _isVibratingOnEdge = true;
+    _vibratingOnEdgeTimer = Timer(_kOnEdgeVibrationDelay, () {});
     final nextPosition = _getNextPosition(event);
     _scrollAndVibrate(nextPosition);
-    Future.delayed(_kOnEdgeVibrationDelay, () => _isVibratingOnEdge = false);
   }
 
   bool _isAtEdge(RotaryDirection direction) {
