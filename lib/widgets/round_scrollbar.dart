@@ -128,7 +128,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   Timer? _fadeOutTimer;
 
   bool _onScroll(ScrollNotification notification) {
-    if (!notification.metrics.hasViewportDimension ||
+    if (notification.depth > 0 ||
+        !notification.metrics.hasViewportDimension ||
         notification.metrics.extentInside == notification.metrics.extentTotal) {
       return false;
     }
@@ -142,7 +143,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   double? _viewPortDimensions;
 
   bool _onScrollMetricsChange(ScrollMetricsNotification notification) {
-    if (!notification.metrics.hasViewportDimension ||
+    if (notification.depth > 0 ||
+        !notification.metrics.hasViewportDimension ||
         !notification.metrics.hasContentDimensions ||
         _viewPortDimensions == notification.metrics.viewportDimension) {
       return false;

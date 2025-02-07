@@ -55,7 +55,7 @@ class RotaryScrollbar<T extends ScrollController> extends StatefulWidget {
 
   /// The [ScrollController] or [PageController] for the scrollable widget that this scrollbar
   /// controls.
-  final T controller;
+  final T? controller;
 
   /// The padding around the scrollbar track.
   ///
@@ -145,25 +145,15 @@ class _RotaryScrollbarState<T extends ScrollController>
     _rotarySubscription = rotaryEvents.listen(_rotaryEventListener);
   }
 
-  void _initControllerListeners() {
-    widget.controller.addListener(_scrollControllerListener);
-    if (!widget.controller.hasClients) {
-      return;
-    }
-
-    _currentPos = switch (widget.controller) {
-      final PageController pageController => pageController.initialPage,
-      _ => widget.controller.offset,
-    };
-  }
-
-  void _scrollControllerListener() {
-    if (_isAnimating) return;
+  bool _onScroll(ScrollNotification notification) {
+    if (_isAnimating || notification.depth > 0) return false;
 
     _currentPos = switch (widget.controller) {
       final PageController pageController => pageController.page?.toInt() ?? 0,
-      _ => widget.controller.offset,
+      _ => notification.metrics.pixels,
     };
+
+    return false;
   }
 
   void _rotaryEventListener(RotaryEvent event) {
@@ -222,7 +212,7 @@ class _RotaryScrollbarState<T extends ScrollController>
         curve: widget.pageTransitionCurve,
       );
     }
-    return widget.controller.animateTo(
+    return widget.controller?.animateTo(
       pos.toDouble(),
       duration: widget.scrollAnimationDuration,
       curve: widget.scrollAnimationCurve,
@@ -249,23 +239,21 @@ class _RotaryScrollbarState<T extends ScrollController>
   bool _isAtEdge(RotaryDirection direction) {
     switch (direction) {
       case RotaryDirection.clockwise:
-        return widget.controller.position.extentAfter == 0;
+        return widget.controller?.position.extentAfter == 0;
       case RotaryDirection.counterClockwise:
-        return widget.controller.position.extentBefore == 0;
+        return widget.controller?.position.extentBefore == 0;
     }
   }
 
   @override
   void initState() {
     _initRotarySubscription();
-    _initControllerListeners();
     super.initState();
   }
 
   @override
   void dispose() {
     _disposeRotarySubscription();
-    _disposeControllerListeners();
     super.dispose();
   }
 
@@ -273,21 +261,22 @@ class _RotaryScrollbarState<T extends ScrollController>
     _rotarySubscription.cancel();
   }
 
-  void _disposeControllerListeners() {
-    widget.controller.removeListener(_scrollControllerListener);
-  }
-
   @override
   Widget build(BuildContext context) {
-    return RoundScrollbar(
-      controller: widget.controller,
-      width: widget.width,
-      padding: widget.padding,
-      autoHide: widget.autoHide,
-      autoHideDuration: widget.autoHideDuration,
-      opacityAnimationCurve: widget.opacityAnimationCurve,
-      opacityAnimationDuration: widget.opacityAnimationDuration,
-      child: widget.child,
+    return PrimaryScrollController(
+      controller: widget.controller ?? PrimaryScrollController.of(context),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _onScroll,
+        child: RoundScrollbar(
+          width: widget.width,
+          padding: widget.padding,
+          autoHide: widget.autoHide,
+          autoHideDuration: widget.autoHideDuration,
+          opacityAnimationCurve: widget.opacityAnimationCurve,
+          opacityAnimationDuration: widget.opacityAnimationDuration,
+          child: widget.child,
+        ),
+      ),
     );
   }
 }
