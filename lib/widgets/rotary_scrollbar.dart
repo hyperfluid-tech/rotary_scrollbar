@@ -243,7 +243,6 @@ class _RotaryScrollbarState<T extends ScrollController>
     if (_isVibratingOnEdge) return;
 
     _isVibratingOnEdge = true;
-    widget.controller.notifyListeners();
     final nextPosition = _getNextPosition(event);
     _scrollAndVibrate(nextPosition);
     Future.delayed(_kOnEdgeVibrationDelay, () => _isVibratingOnEdge = false);
