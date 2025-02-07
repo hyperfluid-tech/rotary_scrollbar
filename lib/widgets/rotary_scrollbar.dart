@@ -1,5 +1,3 @@
-// ignore_for_file: no_logic_in_create_state, invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-
 import 'dart:async';
 
 import 'package:flutter/widgets.dart';
@@ -20,7 +18,7 @@ import 'package:wearable_rotary/wearable_rotary.dart';
 ///  * [RoundScrollbar], the base scrollbar widget that this class extends. It
 /// provides the visual representation of the scrollbar but lacks rotary
 /// input handling.
-class RotaryScrollbar extends StatefulWidget {
+class RotaryScrollbar<T extends ScrollController> extends StatefulWidget {
   /// Determines whether haptic feedback (vibration) is generated for each
   /// scroll tick.
   ///
@@ -55,9 +53,9 @@ class RotaryScrollbar extends StatefulWidget {
   /// Defaults to [Curves.linear].
   final Curve scrollAnimationCurve;
 
-  /// The [ScrollController] for the scrollable widget that this scrollbar
+  /// The [ScrollController] or [PageController] for the scrollable widget that this scrollbar
   /// controls.
-  final ScrollController controller;
+  final T controller;
 
   /// The padding around the scrollbar track.
   ///
@@ -128,17 +126,11 @@ class RotaryScrollbar extends StatefulWidget {
   });
 
   @override
-  State<RotaryScrollbar> createState() {
-    // Determines the appropriate state class based on the type of controller.
-    if (controller is PageController) {
-      return _RotaryScrollbarPageState();
-    }
-
-    return _RotaryScrollbarState();
-  }
+  State<RotaryScrollbar> createState() => _RotaryScrollbarState();
 }
 
-class _RotaryScrollbarState extends State<RotaryScrollbar> {
+class _RotaryScrollbarState<T extends ScrollController>
+    extends State<RotaryScrollbar<T>> {
   static const _kVibrationDuration = 25;
 
   static const _kVibrationAmplitude = 64;
@@ -155,14 +147,23 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
 
   void _initControllerListeners() {
     widget.controller.addListener(_scrollControllerListener);
-    if (widget.controller.hasClients) {
-      _currentPos = widget.controller.offset;
+    if (!widget.controller.hasClients) {
+      return;
     }
+
+    _currentPos = switch (widget.controller) {
+      final PageController pageController => pageController.initialPage,
+      _ => widget.controller.offset,
+    };
   }
 
   void _scrollControllerListener() {
     if (_isAnimating) return;
-    _currentPos = widget.controller.offset;
+
+    _currentPos = switch (widget.controller) {
+      final PageController pageController => pageController.page?.toInt() ?? 0,
+      _ => widget.controller.offset,
+    };
   }
 
   void _rotaryEventListener(RotaryEvent event) {
@@ -174,10 +175,19 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
     _rotaryEventListenerScrollController(event);
   }
 
-  num _getNextPosition(RotaryEvent event) =>
-      _currentPos +
-      widget.scrollMagnitude *
-          (event.direction == RotaryDirection.clockwise ? 1 : -1);
+  num _getNextPosition(RotaryEvent event) {
+    final direction = switch (event.direction) {
+      RotaryDirection.clockwise => 1,
+      RotaryDirection.counterClockwise => -1,
+    };
+
+    final magnitude = switch (widget.controller) {
+      PageController() => 1,
+      _ => widget.scrollMagnitude,
+    };
+
+    return _currentPos + (magnitude * direction);
+  }
 
   void _rotaryEventListenerScrollController(RotaryEvent event) {
     final nextPos = _getNextPosition(event);
@@ -205,6 +215,13 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   }
 
   Future<void> _scrollToPosition(num pos) async {
+    if (widget.controller case final PageController pageController) {
+      return pageController.animateToPage(
+        pos.toInt(),
+        duration: widget.pageTransitionDuration,
+        curve: widget.pageTransitionCurve,
+      );
+    }
     return widget.controller.animateTo(
       pos.toDouble(),
       duration: widget.scrollAnimationDuration,
@@ -235,10 +252,9 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
   bool _isAtEdge(RotaryDirection direction) {
     switch (direction) {
       case RotaryDirection.clockwise:
-        return widget.controller.offset ==
-            widget.controller.position.maxScrollExtent;
+        return widget.controller.position.extentAfter == 0;
       case RotaryDirection.counterClockwise:
-        return widget.controller.offset == 0;
+        return widget.controller.position.extentBefore == 0;
     }
   }
 
@@ -276,52 +292,5 @@ class _RotaryScrollbarState extends State<RotaryScrollbar> {
       opacityAnimationDuration: widget.opacityAnimationDuration,
       child: widget.child,
     );
-  }
-}
-
-/// A specialized version of [_RotaryScrollbarState] for use with [PageController].
-class _RotaryScrollbarPageState extends _RotaryScrollbarState {
-  /// The [PageController] associated with the scrollable widget.
-  PageController get _pageController => widget.controller as PageController;
-
-  @override
-  void _initControllerListeners() {
-    _pageController.addListener(_pageControllerListener);
-    _currentPos = _pageController.initialPage;
-  }
-
-  @override
-  void _disposeControllerListeners() {
-    _pageController.removeListener(_pageControllerListener);
-  }
-
-  void _pageControllerListener() {
-    if (_isAnimating) return;
-    _currentPos = _pageController.page!.toInt();
-  }
-
-  @override
-  Future<void> _scrollToPosition(num pos) async {
-    return _pageController.animateToPage(
-      pos.toInt(),
-      duration: widget.pageTransitionDuration,
-      curve: widget.pageTransitionCurve,
-    );
-  }
-
-  @override
-  num _getNextPosition(RotaryEvent event) =>
-      _currentPos + (event.direction == RotaryDirection.clockwise ? 1 : -1);
-
-  @override
-  bool _isAtEdge(RotaryDirection direction) {
-    switch (direction) {
-      case RotaryDirection.clockwise:
-        return _currentPos ==
-            (widget.controller.position.maxScrollExtent /
-                widget.controller.position.viewportDimension);
-      case RotaryDirection.counterClockwise:
-        return _currentPos == 0;
-    }
   }
 }
