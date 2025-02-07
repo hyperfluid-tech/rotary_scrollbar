@@ -134,22 +134,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       return false;
     }
     _updateScrollbarPainter(notification);
-    if (!_opacityController.isAnimating) _opacityController.forward();
-    _maybeHideAfterDelay();
-
-    return false;
-  }
-
-  double? _viewPortDimensions;
-
-  bool _onScrollMetricsChange(ScrollMetricsNotification notification) {
-    if (notification.depth > 0 ||
-        !notification.metrics.hasViewportDimension ||
-        !notification.metrics.hasContentDimensions ||
-        _viewPortDimensions == notification.metrics.viewportDimension) {
-      return false;
-    }
-    _viewPortDimensions = notification.metrics.viewportDimension;
+    _maybeShowAndHide();
 
     return false;
   }
@@ -163,6 +148,11 @@ class _RoundScrollbarState extends State<RoundScrollbar>
         (notification.metrics.pixels / notification.metrics.viewportDimension);
 
     _painter.updateThumb(index, thumbFraction);
+  }
+
+  void _maybeShowAndHide() {
+    if (!_opacityController.isAnimating) _opacityController.forward();
+    _maybeHideAfterDelay();
   }
 
   void _maybeHideAfterDelay() {
@@ -181,7 +171,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       _opacityController.duration = widget.opacityAnimationDuration;
     }
     if (oldWidget.thumbColor != widget.thumbColor ||
-        oldWidget.trackColor != widget.trackColor) {
+        oldWidget.trackColor != widget.trackColor ||
+        oldWidget.width != widget.width) {
       _updatePainter();
     }
   }
@@ -211,6 +202,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       trackPadding: widget.padding,
       trackWidth: widget.width,
     );
+    _maybeShowAndHide();
   }
 
   @override
@@ -241,13 +233,10 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       controller: widget.controller ?? PrimaryScrollController.of(context),
       child: NotificationListener<ScrollNotification>(
         onNotification: _onScroll,
-        child: NotificationListener<ScrollMetricsNotification>(
-          onNotification: _onScrollMetricsChange,
-          child: CustomPaint(
-            foregroundPainter: _painter,
-            child: RepaintBoundary(
-              child: widget.child,
-            ),
+        child: CustomPaint(
+          foregroundPainter: _painter,
+          child: RepaintBoundary(
+            child: widget.child,
           ),
         ),
       ),
