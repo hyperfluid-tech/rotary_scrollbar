@@ -529,6 +529,7 @@ void main() {
         expect(controller2.position.extentBefore, greaterThan(0));
 
         await tester.pump(defaultAutoHideDuration);
+        await tester.pump(defaultAutoHideDuration);
       },
     );
   });

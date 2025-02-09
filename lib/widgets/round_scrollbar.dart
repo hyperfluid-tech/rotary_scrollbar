@@ -121,31 +121,34 @@ class RoundScrollbar extends StatefulWidget {
 class _RoundScrollbarState extends State<RoundScrollbar>
     with SingleTickerProviderStateMixin {
   late final _RoundProgressBarPainter _painter;
-
   late final AnimationController _opacityController;
-
   late final Animation<double> _opacityAnimation;
   Timer? _fadeOutTimer;
 
   bool _onScroll(ScrollNotification notification) {
-    if (notification.depth > 0 ||
-        !notification.metrics.hasViewportDimension ||
-        notification.metrics.extentInside == notification.metrics.extentTotal) {
-      return false;
+    if (notification.depth == 0 &&
+        notification.metrics.hasViewportDimension &&
+        notification.metrics.maxScrollExtent > 0) {
+      _updateScrollbarPainter(notification.metrics);
+      _maybeShowAndHide();
     }
-    _updateScrollbarPainter(notification);
-    _maybeShowAndHide();
-
     return false;
   }
 
-  void _updateScrollbarPainter(ScrollNotification notification) {
-    final thumbFraction = 1 /
-        ((notification.metrics.maxScrollExtent /
-                notification.metrics.viewportDimension) +
-            1);
-    final index =
-        (notification.metrics.pixels / notification.metrics.viewportDimension);
+  bool _onScrollMetrics(ScrollMetricsNotification notification) {
+    if (notification.depth == 0 &&
+        notification.metrics.hasViewportDimension &&
+        notification.metrics.maxScrollExtent > 0) {
+      _updateScrollbarPainter(notification.metrics);
+      _maybeShowAndHide();
+    }
+    return false;
+  }
+
+  void _updateScrollbarPainter(ScrollMetrics metrics) {
+    final thumbFraction =
+        1 / ((metrics.maxScrollExtent / metrics.viewportDimension) + 1);
+    final index = (metrics.pixels / metrics.viewportDimension);
 
     _painter.updateThumb(index, thumbFraction);
   }
@@ -158,10 +161,10 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   void _maybeHideAfterDelay() {
     _fadeOutTimer?.cancel();
     if (!widget.autoHide) return;
-    _fadeOutTimer = Timer(widget.autoHideDuration, () {
-      _opacityController.reverse();
-      _fadeOutTimer = null;
-    });
+    _fadeOutTimer = Timer(
+      widget.autoHideDuration,
+      _opacityController.reverse,
+    );
   }
 
   @override
@@ -172,7 +175,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
     }
     if (oldWidget.thumbColor != widget.thumbColor ||
         oldWidget.trackColor != widget.trackColor ||
-        oldWidget.width != widget.width) {
+        oldWidget.width != widget.width ||
+        oldWidget.padding != widget.padding) {
       _updatePainter();
     }
   }
@@ -202,7 +206,6 @@ class _RoundScrollbarState extends State<RoundScrollbar>
       trackPadding: widget.padding,
       trackWidth: widget.width,
     );
-    _maybeShowAndHide();
   }
 
   @override
@@ -213,6 +216,8 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   void _updatePainter() {
     _painter
+      ..trackWidth = widget.width
+      ..trackPadding = widget.padding
       ..track.color = widget.trackColor ??
           ScrollbarTheme.of(context).trackColor?.resolve(<WidgetState>{}) ??
           Theme.of(context).highlightColor
@@ -231,12 +236,15 @@ class _RoundScrollbarState extends State<RoundScrollbar>
   Widget build(BuildContext context) {
     return PrimaryScrollController(
       controller: widget.controller ?? PrimaryScrollController.of(context),
-      child: NotificationListener<ScrollNotification>(
-        onNotification: _onScroll,
-        child: CustomPaint(
-          foregroundPainter: _painter,
-          child: RepaintBoundary(
-            child: widget.child,
+      child: NotificationListener<ScrollMetricsNotification>(
+        onNotification: _onScrollMetrics,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: _onScroll,
+          child: CustomPaint(
+            foregroundPainter: _painter,
+            child: RepaintBoundary(
+              child: widget.child,
+            ),
           ),
         ),
       ),
@@ -282,10 +290,10 @@ class _RoundProgressBarPainter extends ChangeNotifier implements CustomPainter {
   final Animation<double> opacityAnimation;
 
   /// The width of the track.
-  final double trackWidth;
+  double trackWidth;
 
   /// The padding around the track.
-  final double trackPadding;
+  double trackPadding;
 
   /// Creates a [_RoundProgressBarPainter].
   _RoundProgressBarPainter({
