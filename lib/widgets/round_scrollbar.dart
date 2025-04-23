@@ -1,7 +1,7 @@
 import 'dart:async';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
 
 // Defines the starting point of the progress bar arc on the screen.
 // This is equivalent to the 2 o'clock position on an analog clock.
@@ -169,7 +169,9 @@ class _RoundScrollbarState extends State<RoundScrollbar>
     _fadeOutTimer?.cancel();
     if (!widget.autoHide) return;
     _fadeOutTimer = Timer(widget.autoHideDuration, () {
-      _opacityController.reverse();
+      if (mounted) {
+        _opacityController.reverse();
+      }
       _fadeOutTimer = null;
     });
   }
