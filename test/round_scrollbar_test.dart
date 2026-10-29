@@ -184,6 +184,26 @@ void main() {
     );
   });
 
+  group('Lifecycle', () {
+    testWidgets(
+      'GIVEN visible scrollbar '
+      'WHEN it is disposed before the autoHide duration elapses '
+      'THEN the pending fade-out does not touch the disposed controller',
+      (tester) async {
+        // Arrange
+        await setUpWidget(tester);
+        await tester.pumpAndSettle(defaultOpacityDuration); // Fade in
+
+        // Act - leave the page while the fade-out timer is pending
+        await tester.pumpWidget(const SizedBox());
+        await tester.pump(defaultAutoHideDuration);
+
+        // Assert
+        expect(tester.takeException(), isNull);
+      },
+    );
+  });
+
   group('Animation control', () {
     group('Fade in animation', () {
       testWidgets(

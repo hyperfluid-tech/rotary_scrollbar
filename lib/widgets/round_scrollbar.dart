@@ -169,7 +169,9 @@ class _RoundScrollbarState extends State<RoundScrollbar>
     _fadeOutTimer?.cancel();
     if (!widget.autoHide) return;
     _fadeOutTimer = Timer(widget.autoHideDuration, () {
-      _opacityController.reverse();
+      if (mounted) {
+        _opacityController.reverse();
+      }
       _fadeOutTimer = null;
     });
   }
@@ -243,6 +245,7 @@ class _RoundScrollbarState extends State<RoundScrollbar>
 
   @override
   void dispose() {
+    _fadeOutTimer?.cancel();
     _currentController?.removeListener(_onScroll);
     _opacityController.dispose();
     super.dispose();

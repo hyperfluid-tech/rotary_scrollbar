@@ -1,3 +1,10 @@
+## 1.1.1
+
+- **Bug Fixes**:
+  - Fixed `AnimationController.reverse() called after AnimationController.dispose()` when a page with a
+    `RoundScrollbar` is closed before the auto-hide duration elapses. The fade-out timer is now cancelled in
+    `dispose()` and its callback checks `mounted`.
+
 ## 1.1.0
 
 - **Bug Fixes**:
